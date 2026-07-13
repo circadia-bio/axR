@@ -1,0 +1,3 @@
+# Windows: serial I/O goes through the Win32 API (kernel32: CreateFile,
+# SetCommState, SetCommTimeouts), linked by default under Rtools44.
+PKG_LIBS =
