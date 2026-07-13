@@ -14,6 +14,7 @@
 // handling) lives in R -- this file just moves data across the boundary.
 
 #include <Rcpp.h>
+#include <fcntl.h>
 #include "omapi/omapi.h"
 
 // ---- Session lifecycle -----------------------------------------------
@@ -26,6 +27,33 @@ int axR_omapi_startup_cpp() {
 // [[Rcpp::export]]
 int axR_omapi_shutdown_cpp() {
   return OmShutdown();
+}
+
+// Diagnostic escape hatch: OMAPI logs internally via OmLog(), but axR's
+// default log target is NULL (see omapi-main.c's axR patch) so that
+// compiled code doesn't write to stderr unprompted -- see NEWS.md. This
+// lets a caller opt back into stderr logging when actually debugging a
+// device-detection problem. Note this only controls *where* logged lines
+// go; *whether* anything is logged at all is controlled by OMAPI's debug
+// level, which is set once from the OMDEBUG environment variable at
+// OmStartup() time (i.e. before library(axR) is called) and can't be
+// changed afterward.
+// [[Rcpp::export]]
+int axR_omapi_set_log_stream_cpp(int fd) {
+  return OmSetLogStream(fd);
+}
+
+// File variant of the above, for when a raw fd 2 (stderr) write from a
+// background pthread doesn't reliably reach the R console/terminal --
+// this sidesteps that ambiguity entirely by writing to a plain file that
+// can be read back with readLines() afterward. Uses low-level open() (not
+// fopen()) so the fd handed to OmSetLogStream() isn't already wrapped in
+// a FILE* we'd otherwise have to avoid double-closing.
+// [[Rcpp::export]]
+int axR_omapi_set_log_file_cpp(std::string path) {
+  int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  if (fd < 0) return -1;
+  return OmSetLogStream(fd);
 }
 
 // [[Rcpp::export]]

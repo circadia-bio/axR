@@ -107,6 +107,42 @@
   fix. Also removed several `fprintf(stderr, ...)` calls that
   duplicated an adjacent `OmLog()` call (which already supports
   configurable log streams/callbacks).
+* `omapi-devicefinder-mac.c`, `DeviceNotification()`: guard
+  `CFRelease(deviceData->deviceName)` against NULL. This was crashing
+  R (`rsession`) on device *removal* with `*** CFRelease() called with
+  NULL ***` / `EXC_BREAKPOINT` on current macOS -- older CoreFoundation
+  treated `CFRelease(NULL)` as a silent no-op; recent macOS hardens it
+  into a hard abort. A decade-old latent bug in the vendored code,
+  newly fatal rather than newly introduced. Found via a real device
+  test (macOS 26.2, AX3) -- see the crash report's stack trace
+  (`DeviceNotification` at `omapi-devicefinder-mac.c:386`) for the
+  original diagnosis.
+* `omapi-devicefinder-mac.c`, `DeviceNotification()`: also stopped
+  calling `Release()` through `deviceData->deviceInterface` on removal
+  -- this crashed with `SIGSEGV`/`EXC_BAD_ACCESS` even with
+  `deviceInterface` itself non-NULL, i.e. the vtable it pointed to was
+  no longer valid by the time this fires (the physical device is
+  already gone -- `kIOMessageServiceIsTerminated`). Unlike the
+  `CFRelease(NULL)` fix above, this one is inferred from the crash
+  rather than confirmed against documented macOS behaviour -- flagged
+  as provisional pending further real-device testing.
+* `omapi-devicefinder-mac.c`: added an idempotency guard (`DeviceData.removed`)
+  to `DeviceNotification()`, after a third crash appeared on device
+  removal -- a double-free (`free(deviceData)` twice,
+  `___BUG_IN_CLIENT_OF_LIBMALLOC_POINTER_BEING_FREED_WAS_NOT_ALLOCATED`,
+  `SIGABRT`), consistent with IOKit delivering more than one
+  `kIOMessageServiceIsTerminated` for a single physical unplug on
+  current macOS. **First attempt at this guard was itself flawed**: it
+  stored the `removed` flag inside `deviceData`, but the same function
+  also `free()`d `deviceData` -- so a duplicate call's guard check was
+  reading already-freed memory, which is undefined behaviour and could
+  (and did) still let the double-free through. Fixed by no longer
+  calling `free(deviceData)` in this handler at all: the guard can only
+  be reliable if the memory it checks stays valid, so a bounded,
+  negligible leak (one small struct per physical removal event, for
+  the life of the R session) is accepted in exchange for the guard
+  actually working. Four real crashes found and fixed via one
+  afternoon of live-device testing (macOS 26.2, AX3).
 * Build system: `src/Makevars` is no longer committed as a static file.
   `configure` (a POSIX shell script) now generates it from
   `src/Makevars.in` at install time, picking the right device-finder

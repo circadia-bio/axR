@@ -85,6 +85,9 @@ typedef struct DeviceData
 	unsigned int deviceId;
 	const char *mountPath;
 	const char *serialDevice;
+	// axR patch: idempotency guard -- see DeviceNotification(). Zeroed by
+	// DeviceAdded()'s bzero(), so this defaults to "not yet removed".
+	int removed;
 } DeviceData;
 
 static IONotificationPortRef gNotifyPort;
@@ -374,22 +377,64 @@ static void DeviceNotification(void *refCon, io_service_t service, natural_t mes
 	kern_return_t kr;
 	DeviceData *deviceData = (DeviceData *)refCon;
 	if (messageType == kIOMessageServiceIsTerminated)
-	{		
+	{
+		// axR patch: idempotency guard. This callback crashed with a
+		// double-free ("BUG_IN_CLIENT_OF_LIBMALLOC_POINTER_BEING_FREED_WAS_NOT_ALLOCATED")
+		// on current macOS -- IOKit appears to be able to deliver more than
+		// one kIOMessageServiceIsTerminated for a single physical removal
+		// in some cases this vendored code didn't account for. Bail out
+		// immediately on a second call for the same deviceData rather than
+		// touching (and freeing) memory that's already been freed.
+		if (deviceData->removed) { return; }
+		deviceData->removed = 1;
+
 		OmLog(2, "MAC: Removed %u\n", deviceData->deviceId);
-		OmLog(3, "->deviceName: "); CFShow(deviceData->deviceName);
+		if (deviceData->deviceName) { OmLog(3, "->deviceName: "); CFShow(deviceData->deviceName); }
 		OmLog(3, "->locationID: 0x%lx.\n", deviceData->locationID);
 		OmLog(3, "->deviceId: 0x%x.\n", deviceData->deviceId);
 
 		// Call device removed
 		OmDeviceDiscovery(OM_DEVICE_REMOVED, deviceData->deviceId, deviceData->serialNumber, deviceData->serialDevice, deviceData->mountPath);
 
-		CFRelease(deviceData->deviceName);
-		if (deviceData->deviceInterface)
-		{
-			kr = (*deviceData->deviceInterface)->Release(deviceData->deviceInterface);
-		}
+		// axR patch: guard against CFRelease(NULL). Recent macOS hardens
+		// CFRelease() into a hard abort on NULL ("*** CFRelease() called
+		// with NULL ***", EXC_BREAKPOINT) rather than the historical silent
+		// no-op -- this crashed on device removal before this guard was
+		// added. deviceName can apparently be NULL here in some cases this
+		// vendored code doesn't otherwise account for; skipping the release
+		// when NULL is always correct CF semantics regardless of why.
+		if (deviceData->deviceName) { CFRelease(deviceData->deviceName); }
+		// axR patch: don't call Release() through deviceInterface here.
+		// This callback fires on kIOMessageServiceIsTerminated -- the
+		// physical device is already gone by this point, and calling into
+		// its COM-style interface vtable crashed (SIGSEGV) on current
+		// macOS even though deviceInterface itself was non-NULL. IOKit
+		// should tear down the underlying interface object along with the
+		// device regardless of whether we explicitly Release() it here;
+		// not calling it trades a deliberate, bounded non-issue (skipping
+		// a refcount decrement on an object that's being destroyed anyway)
+		// for crash-safety. Unlike the CFRelease(NULL) fix above, I can't
+		// point to a specific documented macOS behaviour change for this
+		// one -- it's inferred from the crash, not confirmed against
+		// Apple's own docs, so treat this as provisional pending further
+		// real-device testing.
+		// if (deviceData->deviceInterface)
+		// {
+		// 	kr = (*deviceData->deviceInterface)->Release(deviceData->deviceInterface);
+		// }
 		kr = IOObjectRelease(deviceData->notification);
-		free(deviceData);
+		// axR patch: don't free(deviceData) here. The idempotency guard
+		// above (deviceData->removed) only works if this memory stays
+		// valid for any subsequent duplicate call to read -- freeing it
+		// would make that guard check itself a use-after-free, which is
+		// exactly what caused the double-free crash this guard was meant
+		// to prevent (the guard's own read of freed memory could come back
+		// as anything, including a value that lets a second call proceed
+		// straight into freeing already-freed memory again). Leaking one
+		// small DeviceData struct per physical removal event, for the life
+		// of the R session, is a bounded, negligible cost against crashing
+		// the whole process.
+		(void)kr;
 	}
 }
 

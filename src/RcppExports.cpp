@@ -30,6 +30,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// axR_omapi_set_log_stream_cpp
+int axR_omapi_set_log_stream_cpp(int fd);
+RcppExport SEXP _axR_axR_omapi_set_log_stream_cpp(SEXP fdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type fd(fdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_log_stream_cpp(fd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_log_file_cpp
+int axR_omapi_set_log_file_cpp(std::string path);
+RcppExport SEXP _axR_axR_omapi_set_log_file_cpp(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_log_file_cpp(path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // axR_omapi_error_string_cpp
 Rcpp::CharacterVector axR_omapi_error_string_cpp(int status);
 RcppExport SEXP _axR_axR_omapi_error_string_cpp(SEXP statusSEXP) {
@@ -400,6 +422,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_axR_axR_omapi_startup_cpp", (DL_FUNC) &_axR_axR_omapi_startup_cpp, 0},
     {"_axR_axR_omapi_shutdown_cpp", (DL_FUNC) &_axR_axR_omapi_shutdown_cpp, 0},
+    {"_axR_axR_omapi_set_log_stream_cpp", (DL_FUNC) &_axR_axR_omapi_set_log_stream_cpp, 1},
+    {"_axR_axR_omapi_set_log_file_cpp", (DL_FUNC) &_axR_axR_omapi_set_log_file_cpp, 1},
     {"_axR_axR_omapi_error_string_cpp", (DL_FUNC) &_axR_axR_omapi_error_string_cpp, 1},
     {"_axR_axR_omapi_get_device_ids_cpp", (DL_FUNC) &_axR_axR_omapi_get_device_ids_cpp, 0},
     {"_axR_axR_omapi_get_device_info_cpp", (DL_FUNC) &_axR_axR_omapi_get_device_info_cpp, 1},

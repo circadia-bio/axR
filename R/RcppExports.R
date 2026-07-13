@@ -9,6 +9,14 @@ axR_omapi_shutdown_cpp <- function() {
     .Call(`_axR_axR_omapi_shutdown_cpp`)
 }
 
+axR_omapi_set_log_stream_cpp <- function(fd) {
+    .Call(`_axR_axR_omapi_set_log_stream_cpp`, fd)
+}
+
+axR_omapi_set_log_file_cpp <- function(path) {
+    .Call(`_axR_axR_omapi_set_log_file_cpp`, path)
+}
+
 axR_omapi_error_string_cpp <- function(status) {
     .Call(`_axR_axR_omapi_error_string_cpp`, status)
 }
