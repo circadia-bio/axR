@@ -7,7 +7,7 @@
 axivity_close(handle)
 }
 \arguments{
-\item{handle}{A connection handle returned by \code{\link[=axivity_open]{axivity_open()}}.}
+\item{handle}{An \code{"axR_connection"} object returned by \code{\link[=axivity_open]{axivity_open()}}.}
 }
 \description{
 Close a serial connection to an Axivity device

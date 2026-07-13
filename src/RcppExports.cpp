@@ -11,7 +11,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // axR_serial_open_cpp
-Rcpp::List axR_serial_open_cpp(std::string port, int baud);
+SEXP axR_serial_open_cpp(std::string port, int baud);
 RcppExport SEXP _axR_axR_serial_open_cpp(SEXP portSEXP, SEXP baudSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -33,14 +33,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // axR_serial_write_cmd_cpp
-std::string axR_serial_write_cmd_cpp(SEXP handle, std::string command);
-RcppExport SEXP _axR_axR_serial_write_cmd_cpp(SEXP handleSEXP, SEXP commandSEXP) {
+std::string axR_serial_write_cmd_cpp(SEXP handle, std::string command, int timeout_ms);
+RcppExport SEXP _axR_axR_serial_write_cmd_cpp(SEXP handleSEXP, SEXP commandSEXP, SEXP timeout_msSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type handle(handleSEXP);
     Rcpp::traits::input_parameter< std::string >::type command(commandSEXP);
-    rcpp_result_gen = Rcpp::wrap(axR_serial_write_cmd_cpp(handle, command));
+    Rcpp::traits::input_parameter< int >::type timeout_ms(timeout_msSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_serial_write_cmd_cpp(handle, command, timeout_ms));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -48,7 +49,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_axR_axR_serial_open_cpp", (DL_FUNC) &_axR_axR_serial_open_cpp, 2},
     {"_axR_axR_serial_close_cpp", (DL_FUNC) &_axR_axR_serial_close_cpp, 1},
-    {"_axR_axR_serial_write_cmd_cpp", (DL_FUNC) &_axR_axR_serial_write_cmd_cpp, 2},
+    {"_axR_axR_serial_write_cmd_cpp", (DL_FUNC) &_axR_axR_serial_write_cmd_cpp, 3},
     {NULL, NULL, 0}
 };
 

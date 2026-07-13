@@ -11,10 +11,12 @@ axivity_open(port, baud = 115200L)
 (e.g. \code{"/dev/tty.usbmodemXXXX"} on macOS, \code{"/dev/ttyACM0"} on Linux, or
 \code{"COM3"} on Windows).}
 
-\item{baud}{Integer. Baud rate. Default TBD pending protocol design.}
+\item{baud}{Integer. Baud rate. The device is a USB CDC virtual serial
+port, so the exact value is largely conventional; \code{115200} matches the
+rate used by Axivity's own OmGui software.}
 }
 \value{
-An opaque connection handle to be passed to
+An object of class \code{"axR_connection"}, to be passed to
 \code{\link[=axivity_send_command]{axivity_send_command()}}, \code{\link[=axivity_reset]{axivity_reset()}}, and \code{\link[=axivity_close]{axivity_close()}}.
 }
 \description{

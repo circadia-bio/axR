@@ -9,7 +9,7 @@ axR_serial_close_cpp <- function(handle) {
     invisible(.Call('_axR_axR_serial_close_cpp', PACKAGE = 'axR', handle))
 }
 
-axR_serial_write_cmd_cpp <- function(handle, command) {
-    .Call('_axR_axR_serial_write_cmd_cpp', PACKAGE = 'axR', handle, command)
+axR_serial_write_cmd_cpp <- function(handle, command, timeout_ms) {
+    .Call('_axR_axR_serial_write_cmd_cpp', PACKAGE = 'axR', handle, command, timeout_ms)
 }
 

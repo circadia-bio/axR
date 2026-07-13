@@ -4,16 +4,34 @@
 \alias{axivity_reset}
 \title{Reset (format) an Axivity device}
 \usage{
-axivity_reset(handle, full = FALSE)
+axivity_reset(handle, full = FALSE, commit = FALSE, timeout_ms = 15000L)
 }
 \arguments{
-\item{handle}{A connection handle returned by \code{\link[=axivity_open]{axivity_open()}}.}
+\item{handle}{An \code{"axR_connection"} object returned by \code{\link[=axivity_open]{axivity_open()}}.}
 
 \item{full}{Logical. If \code{TRUE}, perform a full NAND wipe (\verb{FORMAT W})
-instead of a quick format. Default \code{FALSE}.}
+instead of a quick format (\verb{FORMAT Q}). Default \code{FALSE}.}
+
+\item{commit}{Logical. If \code{TRUE}, also commit/rewrite the data file
+header afterwards (\verb{FORMAT ...C}). Default \code{FALSE}.}
+
+\item{timeout_ms}{Integer. How long to wait for a response, in
+milliseconds. Default \code{15000} (formatting -- especially a full wipe --
+can take much longer than a typical query command).}
+}
+\value{
+Character. The device's raw response.
 }
 \description{
-Sends the device format command, clearing recorded data. Corresponds to
-the \code{FORMAT} (quick) or \verb{FORMAT W} (full wipe) commands in the Open
-Movement protocol.
+Sends the device's \code{FORMAT} command, following the Open Movement
+protocol: \verb{FORMAT \{Q|W\}[C]}, where \code{Q} performs a quick format
+(filesystem recreated) and \code{W} thoroughly wipes the NAND memory. The
+optional \code{commit} flag appends \code{C}, which also rewrites the data file
+header afterwards.
+}
+\details{
+During formatting the device's USB mass storage volume briefly
+disappears and re-appears to the operating system, so this can take
+noticeably longer than other commands -- \code{timeout_ms} defaults higher
+than \code{\link[=axivity_send_command]{axivity_send_command()}}'s.
 }

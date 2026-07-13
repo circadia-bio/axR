@@ -4,17 +4,24 @@
 \alias{axivity_send_command}
 \title{Send a raw command to an Axivity device}
 \usage{
-axivity_send_command(handle, command)
+axivity_send_command(handle, command, timeout_ms = 2000L)
 }
 \arguments{
-\item{handle}{A connection handle returned by \code{\link[=axivity_open]{axivity_open()}}.}
+\item{handle}{An \code{"axR_connection"} object returned by \code{\link[=axivity_open]{axivity_open()}}.}
 
-\item{command}{Character. The command string to send.}
+\item{command}{Character. The command string to send, e.g. \code{"ID"},
+\code{"TIME"}, \code{"SESSION"}.}
+
+\item{timeout_ms}{Integer. How long to wait for a response, in
+milliseconds. Default \code{2000}.}
 }
 \value{
-Character. The device's response.
+Character. The device's raw response line (e.g. \code{"ID=CWA,..."}).
+Only the first line of the response is captured; multi-line output
+(e.g. from \code{STREAM}) is not supported by this function.
 }
 \description{
 Sends a plain-text command line following the Open Movement serial
-command protocol and returns the device's response.
+command protocol (commands/responses are 7-bit ASCII, CR/LF terminated)
+and returns the device's response.
 }

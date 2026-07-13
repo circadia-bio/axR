@@ -23,7 +23,8 @@ Imports:
 LinkingTo:
     Rcpp
 Suggests:
-    testthat (>= 3.0.0),
+    testthat (>= 3.1.4),
+    withr,
     knitr,
     rmarkdown
 Config/testthat/edition: 3

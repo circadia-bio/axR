@@ -4,14 +4,23 @@
 \alias{axivity_discover}
 \title{Discover connected Axivity devices}
 \usage{
-axivity_discover()
+axivity_discover(baud = 115200L, timeout_ms = 500L)
+}
+\arguments{
+\item{baud}{Integer. Baud rate to use for the probe. Default \code{115200}.}
+
+\item{timeout_ms}{Integer. How long to wait for a response from each
+candidate port, in milliseconds. Default \code{500}.}
 }
 \value{
-A data frame with one row per device found, with columns such as
-\code{port}, \code{device_id}, and \code{model}. Columns are provisional pending
-protocol design.
+A data frame with one row per device found, with columns \code{port},
+\code{type} (\code{"CWA"} for AX3, \code{"AX6"} for AX6), \code{hardware_version},
+\code{firmware_version}, and \code{device_id}. Zero rows if none are found.
 }
 \description{
-Scans available serial (CDC/COM port) devices for ones matching the
-Axivity AX3/AX6 vendor/product signature.
+Scans candidate serial ports and probes each one with the \code{ID} command,
+checking for the Axivity signature in the response (\code{CWA} for AX3, \code{AX6}
+for AX6). This matches devices by protocol handshake rather than by USB
+vendor/product ID, so it should keep working across firmware/driver
+versions that might change the reported USB descriptors.
 }

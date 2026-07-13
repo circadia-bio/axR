@@ -4,21 +4,32 @@
 \alias{axivity_download}
 \title{Download recorded data off an Axivity device}
 \usage{
-axivity_download(device_path, dest_dir, pattern = "\\\\.cwa$")
+axivity_download(
+  device_path,
+  dest_dir,
+  pattern = "\\\\.cwa$",
+  overwrite = FALSE
+)
 }
 \arguments{
-\item{device_path}{Character. Path to the mounted device volume.}
+\item{device_path}{Character. Path to the mounted device volume
+(e.g. \code{"/Volumes/CWA1234"} on macOS, or a drive letter on Windows).}
 
-\item{dest_dir}{Character. Destination directory for downloaded files.}
+\item{dest_dir}{Character. Destination directory for downloaded files.
+Created (recursively) if it doesn't already exist.}
 
-\item{pattern}{Character. Regex to filter which files are copied.
-Default \code{"\\\\.cwa$"}.}
+\item{pattern}{Character. Regex to filter which files are copied,
+matched case-insensitively. Default \code{"\\\\.cwa$"}.}
+
+\item{overwrite}{Logical. Overwrite existing files at the destination.
+Default \code{FALSE}.}
 }
 \value{
-Character vector of destination file paths.
+Character vector of destination file paths that were
+successfully copied.
 }
 \description{
 Axivity devices expose recorded \code{.cwa} files over a standard USB mass
 storage interface once configured; this copies file(s) off that volume.
-\code{axR} does not parse \code{.cwa} contents — see \code{mrpheus} or \code{zeitR} for that.
+\code{axR} does not parse \code{.cwa} contents -- see \code{mrpheus} or \code{zeitR} for that.
 }
