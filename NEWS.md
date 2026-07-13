@@ -1,51 +1,126 @@
 ## axR 0.0.0.9000
 
-* Initial scaffold.
-* Package structure drafted: `DESCRIPTION`, `NAMESPACE`, Rcpp/C++ src layout
-  (POSIX `termios.h` / Windows `kernel32`, following dynR's Makevars split).
+* Initial scaffold: `DESCRIPTION`, `NAMESPACE`, Rcpp/C++ src layout.
 
-### Serial communication
+### Architecture change: wraps OMAPI rather than reimplementing the serial protocol
 
-* `axivity_open()` / `axivity_close()`: open/close a serial connection to an
-  Axivity device. POSIX backend via `termios.h` (raw mode, 8N1, no flow
-  control, `select()`-based read timeouts); Windows backend via `kernel32`
-  (`CreateFile`/`SetCommState`/`SetCommTimeouts`).
-* `axivity_send_command()`: send a plain-text command and read the first
-  line of the response, following the documented Open Movement serial
-  protocol (7-bit ASCII, CR/LF terminated). Multi-line responses (e.g.
-  `STREAM`'s preview output) are out of scope for now.
-* `axivity_reset()`: sends `FORMAT {Q|W}[C]` to quick-format or fully wipe
-  the device, with an optional commit flag. Longer default timeout
-  (15s) than other commands, since formatting causes the device's mass
-  storage volume to briefly eject and re-appear.
-* `axivity_discover()`: probes candidate serial ports
-  (`/dev/tty.usbmodem*`, `/dev/cu.usbmodem*`, `/dev/ttyACM*`,
-  `/dev/ttyUSB*` on POSIX; `COM1`-`COM40` on Windows) with the `ID`
-  command and matches on the device's own reported signature (`CWA` for
-  AX3, `AX6` for AX6) rather than a USB VID/PID, so it isn't tied to any
-  particular USB descriptor. Windows port range is a placeholder pending
-  SetupAPI-based enumeration.
+* Retired the hand-rolled `termios.h`/`kernel32` serial implementation
+  (moved to `attic/serial.cpp` -- not part of the build).
+* Vendored the Open Movement Project's OMAPI C library into `src/omapi`
+  (BSD 2-clause, Newcastle University; see `src/omapi/LICENSE.TXT`).
+  OMAPI is the same library behind Axivity's own OmGui, with maintained
+  platform-specific device discovery (IOKit/DiskArbitration on macOS,
+  SetupAPI on Windows, udev on Linux).
+* `src/axR-omapi.cpp`: thin Rcpp wrapper -- translates between R types and
+  OMAPI's `int deviceId` / out-parameter / negative-error-code convention.
+  No device logic reimplemented here.
+* `.onLoad()`/`.onUnload()` (`R/zzz.R`) call `OmStartup()`/`OmShutdown()`;
+  there's no separate `axivity_open()`/`close()` step.
+* `SystemRequirements` in `DESCRIPTION`: Linux needs `libudev-dev` (or
+  equivalent) for device discovery. macOS/Windows use OS
+  frameworks/APIs with no separate install step.
+
+### Discovery
+
+* `axivity_discover()`: now backed by `OmGetDeviceIds()` plus per-device
+  status calls, returning `device_id`, `serial`, `port`, `path`,
+  `firmware_version`, `hardware_version`, `battery_level`.
+
+### Status
+
+* `axivity_get_battery()`, `axivity_self_test()`,
+  `axivity_get_memory_health()`, `axivity_get_accelerometer()`,
+  `axivity_get_time()`/`set_time()` (as `POSIXct`), `axivity_set_led()`,
+  `axivity_is_locked()`/`set_lock()`/`unlock()`, `axivity_get_ecc()`/
+  `set_ecc()`, and `axivity_send_command()` (now backed by `OmCommand()`
+  instead of raw serial).
+
+### Settings
+
+* `axivity_get_delays()`/`set_delays()` (`-Inf`/`Inf` as R-side sentinels
+  for OMAPI's zero/infinite `OM_DATETIME` values), `axivity_get_session_id()`/
+  `set_session_id()`, `axivity_get_metadata()`/`set_metadata()`,
+  `axivity_get_accel_config()`/`set_accel_config()`.
+* `axivity_reset()`: **breaking change** from the previous `full`/`commit`
+  logical arguments -- now takes `level = c("none","delete","quickformat","wipe")`,
+  matching OMAPI's `OM_ERASE_LEVEL` enum directly.
 
 ### Data download
 
-* `axivity_download()`: copies files matching a pattern (default
-  `.cwa`) from a mounted device volume to a destination directory.
-  Plain file copy over the device's USB mass storage interface -- no
-  `.cwa` parsing.
+* `axivity_download()`: **breaking change** from the previous plain
+  `file.copy()` version -- now wraps `OmBeginDownloading()`, OMAPI's own
+  background-thread download, with `axivity_download_status()`/`_wait()`/
+  `_cancel()` for polling and cancellation. `blocking = TRUE` (default)
+  waits for completion; `blocking = FALSE` returns immediately.
+* `axivity_get_data_info()`: file size, filename, block layout, and
+  recorded time range, from `OmGetDataFileSize()`/`OmGetDataFilename()`/
+  `OmGetDataRange()`.
+
+### Design decisions
+
+* No C-level callbacks (`OmSetDownloadCallback()`/`OmSetDeviceCallback()`)
+  -- they fire from OMAPI's own background thread, and calling back into R
+  from a non-R thread isn't safe. Polling (`axivity_download_status()`,
+  `OmWaitForDownload()` via `axivity_download_wait()`) is used instead.
 
 ### Tests
 
-* `axivity_reset()` command-string construction, covered without hardware
-  via `testthat::local_mocked_bindings()`.
-* `axivity_download()` covered fully via `withr::local_tempdir()` fixtures
-  (matching/non-matching files, missing device path, missing dest dir,
-  case-insensitive pattern).
-* `axivity_open()`/`axivity_discover()` error-path and shape checks that
-  don't require a physical device.
+* `.om_check()` behaviour (list and scalar status, pass-through vs. error).
+* `axivity_discover()` shape check with no device connected.
+* `axivity_reset()`/`axivity_set_led()` argument validation
+  (`match.arg()` failures), which don't require hardware.
+* Prior serial-I/O and file-copy tests moved to `attic/` (they tested the
+  now-retired API).
 
 ### Known gaps
 
 * Not yet tested against a physical AX3/AX6 device.
-* Windows discovery uses a fixed COM port range rather than true
-  enumeration.
-* `axivity_send_command()` only captures a single response line.
+* `axivity_get_metadata()`'s padding-trim regex hasn't been checked
+  against a real device's returned buffer.
+
+### Vendored code patches
+
+* `src/omapi/omapi-devicefinder-mac.c`: `kIOMasterPortDefault` ->
+  `kIOMainPortDefault` (2 occurrences), silencing a macOS 12+ deprecation
+  warning from `R CMD check`. Purely a rename -- `kIOMasterPortDefault`
+  remains functional, this isn't a behaviour change. Flagged inline with
+  `// axR patch` comments; re-apply if this file is ever re-vendored from
+  upstream libomapi.
+* `sprintf()` -> `snprintf()` throughout `omapi-status.c`,
+  `omapi-settings.c`, and `omapi-devicefinder-mac.c` (all into
+  already-fixed-size buffers -- adds a bound, doesn't change behaviour).
+  Fixes an `R CMD check` "compiled code" warning about calling
+  unbounded `[v]sprintf`.
+* `omapi-main.c`: `OmStartup()`'s default log stream changed from
+  `stderr` to `NULL` (no logging unless the caller opts in via
+  `OmSetLogStream()`/`OmSetLogCallback()`). `OmLog()` already guards on
+  `om.log != NULL` before writing, so this is safe -- compiled code
+  writing directly to stderr instead of through R's console is exactly
+  what the check warns about, and at the default debug level nothing
+  was being logged either way.
+* `omapi-devicefinder-mac.c`: removed a custom `SIGINT` handler
+  (`SignalHandler()`) that called `exit(0)` directly, plus its
+  registration via `signal()`. A vendored library installing a
+  process-wide signal handler that terminates the process is actively
+  unsafe when embedded in a host application (R) that has its own
+  interrupt handling -- this is a real robustness fix, not just a lint
+  fix. Also removed several `fprintf(stderr, ...)` calls that
+  duplicated an adjacent `OmLog()` call (which already supports
+  configurable log streams/callbacks).
+* Build system: `src/Makevars` is no longer committed as a static file.
+  `configure` (a POSIX shell script) now generates it from
+  `src/Makevars.in` at install time, picking the right device-finder
+  object and libraries for the platform. This moves the
+  Darwin-vs-Linux conditional out of Make syntax (`ifeq`, `$(shell)`,
+  `:=`) into shell syntax, fixing an `R CMD check` "GNU extensions in
+  Makefiles" warning. `configure` must be executable
+  (`chmod +x configure`) -- git doesn't reliably preserve this bit
+  across all clone/checkout paths, so double-check after cloning.
+  `src/Makevars.win` is untouched (it never had the conditional logic).
+* `cleanup` (also a POSIX shell script, also needs `chmod +x`): removes
+  `configure`-generated `src/Makevars` and any leftover `.o`/`.so`/`.dll`
+  build artefacts (including nested ones in `src/omapi/`, which
+  `pkgbuild::clean_dll()` doesn't reach). Run this before `R CMD check`
+  if you've built locally beforehand -- the standard companion to a
+  `configure` script per 'Configure and cleanup' in the R Extensions
+  manual.

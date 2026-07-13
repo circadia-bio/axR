@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^\.github$
 ^dev$
+^attic$
 ^LICENSE\.md$
 ^_pkgdown\.yml$
 ^pkgdown$

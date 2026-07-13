@@ -1,0 +1,6 @@
+PKG_CPPFLAGS = -Iomapi
+PKG_LIBS = @OMAPI_LIBS@
+
+OBJECTS = RcppExports.o axR-omapi.o omapi/omapi-main.o omapi/omapi-internal.o \
+          omapi/omapi-download.o omapi/omapi-status.o omapi/omapi-reader.o \
+          omapi/omapi-settings.o @OMAPI_FINDER_OBJ@

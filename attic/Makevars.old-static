@@ -1,0 +1,25 @@
+# Vendored OMAPI (omapi/) needs its own include path (quote-includes are
+# flat: "omapi.h", "omapi-internal.h" -- no subpath prefix), plus the
+# platform libraries its device-finder needs. Mirrors omapi's own
+# src/Makefile conditionals -- see that file (in the upstream libomapi
+# repo) for the reference version this was ported from.
+
+PKG_CPPFLAGS = -Iomapi
+
+UNAME_S := $(shell uname -s)
+
+OMAPI_OBJECTS = omapi/omapi-main.o omapi/omapi-internal.o omapi/omapi-download.o \
+                omapi/omapi-status.o omapi/omapi-reader.o omapi/omapi-settings.o
+
+ifeq ($(UNAME_S),Darwin)
+  OMAPI_OBJECTS += omapi/omapi-devicefinder-mac.o
+  PKG_LIBS = -lpthread -framework Cocoa -framework IOKit -framework DiskArbitration
+else
+  # Linux (including WSL): device discovery goes through udev.
+  # Requires libudev-dev installed on the system (apt install libudev-dev
+  # or equivalent) -- see DESCRIPTION's SystemRequirements.
+  OMAPI_OBJECTS += omapi/omapi-devicefinder-linux.o
+  PKG_LIBS = -lpthread -ludev
+endif
+
+OBJECTS = RcppExports.o axR-omapi.o $(OMAPI_OBJECTS)

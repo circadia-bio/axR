@@ -6,11 +6,12 @@ Authors@R: c(
            email = "lucas.franca@northumbria.ac.uk",
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0853-1319")))
-Description: Serial (CDC/COM port) communication with Axivity AX3/AX6
-    accelerometer devices for device discovery, configuration, and reset,
-    plus retrieval of recorded data over the device's USB mass storage
-    interface. Communicates using the documented Open Movement serial
-    command protocol. Does not parse '.cwa' files; that is left to
+Description: Serial communication and data retrieval for Axivity AX3/AX6
+    accelerometer devices: device discovery, status, settings, and data
+    download. Wraps the Open Movement Project's 'OMAPI' C library
+    (vendored in src/omapi, BSD 2-clause, Newcastle University; see
+    src/omapi/LICENSE.TXT), rather than reimplementing the serial
+    protocol directly. Does not parse '.cwa' files; that is left to
     downstream packages (see mrpheus, zeitR). Part of the Circadia Lab
     R ecosystem.
 License: MIT + file LICENSE
@@ -22,9 +23,11 @@ Imports:
     Rcpp (>= 1.0.0)
 LinkingTo:
     Rcpp
+SystemRequirements: On Linux, libudev (e.g. 'libudev-dev' on
+    Debian/Ubuntu) is required for device discovery. macOS and Windows
+    use OS frameworks/APIs with no separate install step.
 Suggests:
     testthat (>= 3.1.4),
-    withr,
     knitr,
     rmarkdown
 Config/testthat/edition: 3

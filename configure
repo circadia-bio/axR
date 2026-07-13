@@ -1,0 +1,31 @@
+#!/bin/sh
+# Generates src/Makevars from src/Makevars.in based on the build platform.
+#
+# The OS-conditional logic (which device-finder object to compile, which
+# system libraries to link) lives here in a plain POSIX shell script
+# rather than as ifeq/$(shell)/:= in src/Makevars itself, so the generated
+# Makevars stays free of GNU Make extensions -- see 'Writing portable
+# packages' in the R Extensions manual.
+#
+# This mirrors upstream libomapi's own src/Makefile conditionals
+# (Darwin -> omapi-devicefinder-mac.c + Cocoa/IOKit/DiskArbitration;
+# Linux -> omapi-devicefinder-linux.c + udev), just relocated from make
+# syntax to shell syntax.
+
+UNAME_S=`uname -s`
+
+if [ "$UNAME_S" = "Darwin" ]; then
+  OMAPI_FINDER_OBJ="omapi/omapi-devicefinder-mac.o"
+  OMAPI_LIBS="-lpthread -framework Cocoa -framework IOKit -framework DiskArbitration"
+else
+  # Linux (including WSL): requires libudev-dev (or equivalent) --
+  # see DESCRIPTION's SystemRequirements.
+  OMAPI_FINDER_OBJ="omapi/omapi-devicefinder-linux.o"
+  OMAPI_LIBS="-lpthread -ludev"
+fi
+
+sed -e "s|@OMAPI_FINDER_OBJ@|$OMAPI_FINDER_OBJ|" \
+    -e "s|@OMAPI_LIBS@|$OMAPI_LIBS|" \
+    src/Makevars.in > src/Makevars
+
+exit 0

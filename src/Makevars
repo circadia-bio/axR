@@ -1,3 +1,0 @@
-# POSIX (macOS/Linux): serial I/O goes through termios.h, part of libc.
-# No extra linking required.
-PKG_LIBS =

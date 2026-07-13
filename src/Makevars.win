@@ -1,3 +1,12 @@
-# Windows: serial I/O goes through the Win32 API (kernel32: CreateFile,
-# SetCommState, SetCommTimeouts), linked by default under Rtools44.
-PKG_LIBS =
+# Windows build of the vendored OMAPI (omapi/). Device discovery goes
+# through SetupAPI/registry lookups (omapi-devicefinder-win.cpp) rather
+# than udev/IOKit. setupapi and advapi32 aren't always in MinGW's default
+# link set, so they're listed explicitly; ole32 covers COM usage pulled in
+# by _WIN32_DCOM in omapi-internal.h.
+
+PKG_CPPFLAGS = -Iomapi
+PKG_LIBS = -lsetupapi -ladvapi32 -lole32
+
+OBJECTS = RcppExports.o axR-omapi.o omapi/omapi-main.o omapi/omapi-internal.o \
+          omapi/omapi-download.o omapi/omapi-status.o omapi/omapi-reader.o \
+          omapi/omapi-settings.o omapi/omapi-devicefinder-win.o

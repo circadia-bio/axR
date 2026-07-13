@@ -10,46 +10,426 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// axR_serial_open_cpp
-SEXP axR_serial_open_cpp(std::string port, int baud);
-RcppExport SEXP _axR_axR_serial_open_cpp(SEXP portSEXP, SEXP baudSEXP) {
+// axR_omapi_startup_cpp
+int axR_omapi_startup_cpp();
+RcppExport SEXP _axR_axR_omapi_startup_cpp() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type port(portSEXP);
-    Rcpp::traits::input_parameter< int >::type baud(baudSEXP);
-    rcpp_result_gen = Rcpp::wrap(axR_serial_open_cpp(port, baud));
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_startup_cpp());
     return rcpp_result_gen;
 END_RCPP
 }
-// axR_serial_close_cpp
-void axR_serial_close_cpp(SEXP handle);
-RcppExport SEXP _axR_axR_serial_close_cpp(SEXP handleSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type handle(handleSEXP);
-    axR_serial_close_cpp(handle);
-    return R_NilValue;
-END_RCPP
-}
-// axR_serial_write_cmd_cpp
-std::string axR_serial_write_cmd_cpp(SEXP handle, std::string command, int timeout_ms);
-RcppExport SEXP _axR_axR_serial_write_cmd_cpp(SEXP handleSEXP, SEXP commandSEXP, SEXP timeout_msSEXP) {
+// axR_omapi_shutdown_cpp
+int axR_omapi_shutdown_cpp();
+RcppExport SEXP _axR_axR_omapi_shutdown_cpp() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type handle(handleSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_shutdown_cpp());
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_error_string_cpp
+Rcpp::CharacterVector axR_omapi_error_string_cpp(int status);
+RcppExport SEXP _axR_axR_omapi_error_string_cpp(SEXP statusSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type status(statusSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_error_string_cpp(status));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_device_ids_cpp
+Rcpp::IntegerVector axR_omapi_get_device_ids_cpp();
+RcppExport SEXP _axR_axR_omapi_get_device_ids_cpp() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_device_ids_cpp());
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_device_info_cpp
+Rcpp::List axR_omapi_get_device_info_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_device_info_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_device_info_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_battery_cpp
+Rcpp::List axR_omapi_get_battery_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_battery_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_battery_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_self_test_cpp
+Rcpp::List axR_omapi_self_test_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_self_test_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_self_test_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_memory_health_cpp
+Rcpp::List axR_omapi_get_memory_health_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_memory_health_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_memory_health_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_accelerometer_cpp
+Rcpp::List axR_omapi_get_accelerometer_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_accelerometer_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_accelerometer_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_time_cpp
+Rcpp::List axR_omapi_get_time_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_time_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_time_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_time_cpp
+int axR_omapi_set_time_cpp(int deviceId, int year, int month, int day, int hour, int min, int sec);
+RcppExport SEXP _axR_axR_omapi_set_time_cpp(SEXP deviceIdSEXP, SEXP yearSEXP, SEXP monthSEXP, SEXP daySEXP, SEXP hourSEXP, SEXP minSEXP, SEXP secSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type year(yearSEXP);
+    Rcpp::traits::input_parameter< int >::type month(monthSEXP);
+    Rcpp::traits::input_parameter< int >::type day(daySEXP);
+    Rcpp::traits::input_parameter< int >::type hour(hourSEXP);
+    Rcpp::traits::input_parameter< int >::type min(minSEXP);
+    Rcpp::traits::input_parameter< int >::type sec(secSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_time_cpp(deviceId, year, month, day, hour, min, sec));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_led_cpp
+int axR_omapi_set_led_cpp(int deviceId, int ledState);
+RcppExport SEXP _axR_axR_omapi_set_led_cpp(SEXP deviceIdSEXP, SEXP ledStateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type ledState(ledStateSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_led_cpp(deviceId, ledState));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_is_locked_cpp
+Rcpp::List axR_omapi_is_locked_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_is_locked_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_is_locked_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_lock_cpp
+int axR_omapi_set_lock_cpp(int deviceId, int code);
+RcppExport SEXP _axR_axR_omapi_set_lock_cpp(SEXP deviceIdSEXP, SEXP codeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type code(codeSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_lock_cpp(deviceId, code));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_unlock_cpp
+int axR_omapi_unlock_cpp(int deviceId, int code);
+RcppExport SEXP _axR_axR_omapi_unlock_cpp(SEXP deviceIdSEXP, SEXP codeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type code(codeSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_unlock_cpp(deviceId, code));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_ecc_cpp
+int axR_omapi_get_ecc_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_ecc_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_ecc_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_ecc_cpp
+int axR_omapi_set_ecc_cpp(int deviceId, bool enabled);
+RcppExport SEXP _axR_axR_omapi_set_ecc_cpp(SEXP deviceIdSEXP, SEXP enabledSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< bool >::type enabled(enabledSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_ecc_cpp(deviceId, enabled));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_command_cpp
+Rcpp::List axR_omapi_command_cpp(int deviceId, std::string command, std::string expected, int timeoutMs);
+RcppExport SEXP _axR_axR_omapi_command_cpp(SEXP deviceIdSEXP, SEXP commandSEXP, SEXP expectedSEXP, SEXP timeoutMsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
     Rcpp::traits::input_parameter< std::string >::type command(commandSEXP);
-    Rcpp::traits::input_parameter< int >::type timeout_ms(timeout_msSEXP);
-    rcpp_result_gen = Rcpp::wrap(axR_serial_write_cmd_cpp(handle, command, timeout_ms));
+    Rcpp::traits::input_parameter< std::string >::type expected(expectedSEXP);
+    Rcpp::traits::input_parameter< int >::type timeoutMs(timeoutMsSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_command_cpp(deviceId, command, expected, timeoutMs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_delays_cpp
+Rcpp::List axR_omapi_get_delays_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_delays_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_delays_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_delays_cpp
+int axR_omapi_set_delays_cpp(int deviceId, bool startZero, bool startInfinite, int startYear, int startMonth, int startDay, int startHour, int startMin, int startSec, bool stopZero, bool stopInfinite, int stopYear, int stopMonth, int stopDay, int stopHour, int stopMin, int stopSec);
+RcppExport SEXP _axR_axR_omapi_set_delays_cpp(SEXP deviceIdSEXP, SEXP startZeroSEXP, SEXP startInfiniteSEXP, SEXP startYearSEXP, SEXP startMonthSEXP, SEXP startDaySEXP, SEXP startHourSEXP, SEXP startMinSEXP, SEXP startSecSEXP, SEXP stopZeroSEXP, SEXP stopInfiniteSEXP, SEXP stopYearSEXP, SEXP stopMonthSEXP, SEXP stopDaySEXP, SEXP stopHourSEXP, SEXP stopMinSEXP, SEXP stopSecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< bool >::type startZero(startZeroSEXP);
+    Rcpp::traits::input_parameter< bool >::type startInfinite(startInfiniteSEXP);
+    Rcpp::traits::input_parameter< int >::type startYear(startYearSEXP);
+    Rcpp::traits::input_parameter< int >::type startMonth(startMonthSEXP);
+    Rcpp::traits::input_parameter< int >::type startDay(startDaySEXP);
+    Rcpp::traits::input_parameter< int >::type startHour(startHourSEXP);
+    Rcpp::traits::input_parameter< int >::type startMin(startMinSEXP);
+    Rcpp::traits::input_parameter< int >::type startSec(startSecSEXP);
+    Rcpp::traits::input_parameter< bool >::type stopZero(stopZeroSEXP);
+    Rcpp::traits::input_parameter< bool >::type stopInfinite(stopInfiniteSEXP);
+    Rcpp::traits::input_parameter< int >::type stopYear(stopYearSEXP);
+    Rcpp::traits::input_parameter< int >::type stopMonth(stopMonthSEXP);
+    Rcpp::traits::input_parameter< int >::type stopDay(stopDaySEXP);
+    Rcpp::traits::input_parameter< int >::type stopHour(stopHourSEXP);
+    Rcpp::traits::input_parameter< int >::type stopMin(stopMinSEXP);
+    Rcpp::traits::input_parameter< int >::type stopSec(stopSecSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_delays_cpp(deviceId, startZero, startInfinite, startYear, startMonth, startDay, startHour, startMin, startSec, stopZero, stopInfinite, stopYear, stopMonth, stopDay, stopHour, stopMin, stopSec));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_session_id_cpp
+Rcpp::List axR_omapi_get_session_id_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_session_id_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_session_id_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_session_id_cpp
+int axR_omapi_set_session_id_cpp(int deviceId, double sessionId);
+RcppExport SEXP _axR_axR_omapi_set_session_id_cpp(SEXP deviceIdSEXP, SEXP sessionIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< double >::type sessionId(sessionIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_session_id_cpp(deviceId, sessionId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_metadata_cpp
+Rcpp::List axR_omapi_get_metadata_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_metadata_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_metadata_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_metadata_cpp
+int axR_omapi_set_metadata_cpp(int deviceId, std::string metadata);
+RcppExport SEXP _axR_axR_omapi_set_metadata_cpp(SEXP deviceIdSEXP, SEXP metadataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< std::string >::type metadata(metadataSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_metadata_cpp(deviceId, metadata));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_accel_config_cpp
+Rcpp::List axR_omapi_get_accel_config_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_accel_config_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_accel_config_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_set_accel_config_cpp
+int axR_omapi_set_accel_config_cpp(int deviceId, int rate, int range);
+RcppExport SEXP _axR_axR_omapi_set_accel_config_cpp(SEXP deviceIdSEXP, SEXP rateSEXP, SEXP rangeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type rate(rateSEXP);
+    Rcpp::traits::input_parameter< int >::type range(rangeSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_set_accel_config_cpp(deviceId, rate, range));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_erase_and_commit_cpp
+int axR_omapi_erase_and_commit_cpp(int deviceId, int eraseLevel);
+RcppExport SEXP _axR_axR_omapi_erase_and_commit_cpp(SEXP deviceIdSEXP, SEXP eraseLevelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type eraseLevel(eraseLevelSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_erase_and_commit_cpp(deviceId, eraseLevel));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_get_data_info_cpp
+Rcpp::List axR_omapi_get_data_info_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_get_data_info_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_get_data_info_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_begin_downloading_cpp
+int axR_omapi_begin_downloading_cpp(int deviceId, int offsetBlocks, int lengthBlocks, std::string destFile);
+RcppExport SEXP _axR_axR_omapi_begin_downloading_cpp(SEXP deviceIdSEXP, SEXP offsetBlocksSEXP, SEXP lengthBlocksSEXP, SEXP destFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    Rcpp::traits::input_parameter< int >::type offsetBlocks(offsetBlocksSEXP);
+    Rcpp::traits::input_parameter< int >::type lengthBlocks(lengthBlocksSEXP);
+    Rcpp::traits::input_parameter< std::string >::type destFile(destFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_begin_downloading_cpp(deviceId, offsetBlocks, lengthBlocks, destFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_query_download_cpp
+Rcpp::List axR_omapi_query_download_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_query_download_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_query_download_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_wait_download_cpp
+Rcpp::List axR_omapi_wait_download_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_wait_download_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_wait_download_cpp(deviceId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// axR_omapi_cancel_download_cpp
+int axR_omapi_cancel_download_cpp(int deviceId);
+RcppExport SEXP _axR_axR_omapi_cancel_download_cpp(SEXP deviceIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type deviceId(deviceIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_omapi_cancel_download_cpp(deviceId));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_axR_axR_serial_open_cpp", (DL_FUNC) &_axR_axR_serial_open_cpp, 2},
-    {"_axR_axR_serial_close_cpp", (DL_FUNC) &_axR_axR_serial_close_cpp, 1},
-    {"_axR_axR_serial_write_cmd_cpp", (DL_FUNC) &_axR_axR_serial_write_cmd_cpp, 3},
+    {"_axR_axR_omapi_startup_cpp", (DL_FUNC) &_axR_axR_omapi_startup_cpp, 0},
+    {"_axR_axR_omapi_shutdown_cpp", (DL_FUNC) &_axR_axR_omapi_shutdown_cpp, 0},
+    {"_axR_axR_omapi_error_string_cpp", (DL_FUNC) &_axR_axR_omapi_error_string_cpp, 1},
+    {"_axR_axR_omapi_get_device_ids_cpp", (DL_FUNC) &_axR_axR_omapi_get_device_ids_cpp, 0},
+    {"_axR_axR_omapi_get_device_info_cpp", (DL_FUNC) &_axR_axR_omapi_get_device_info_cpp, 1},
+    {"_axR_axR_omapi_get_battery_cpp", (DL_FUNC) &_axR_axR_omapi_get_battery_cpp, 1},
+    {"_axR_axR_omapi_self_test_cpp", (DL_FUNC) &_axR_axR_omapi_self_test_cpp, 1},
+    {"_axR_axR_omapi_get_memory_health_cpp", (DL_FUNC) &_axR_axR_omapi_get_memory_health_cpp, 1},
+    {"_axR_axR_omapi_get_accelerometer_cpp", (DL_FUNC) &_axR_axR_omapi_get_accelerometer_cpp, 1},
+    {"_axR_axR_omapi_get_time_cpp", (DL_FUNC) &_axR_axR_omapi_get_time_cpp, 1},
+    {"_axR_axR_omapi_set_time_cpp", (DL_FUNC) &_axR_axR_omapi_set_time_cpp, 7},
+    {"_axR_axR_omapi_set_led_cpp", (DL_FUNC) &_axR_axR_omapi_set_led_cpp, 2},
+    {"_axR_axR_omapi_is_locked_cpp", (DL_FUNC) &_axR_axR_omapi_is_locked_cpp, 1},
+    {"_axR_axR_omapi_set_lock_cpp", (DL_FUNC) &_axR_axR_omapi_set_lock_cpp, 2},
+    {"_axR_axR_omapi_unlock_cpp", (DL_FUNC) &_axR_axR_omapi_unlock_cpp, 2},
+    {"_axR_axR_omapi_get_ecc_cpp", (DL_FUNC) &_axR_axR_omapi_get_ecc_cpp, 1},
+    {"_axR_axR_omapi_set_ecc_cpp", (DL_FUNC) &_axR_axR_omapi_set_ecc_cpp, 2},
+    {"_axR_axR_omapi_command_cpp", (DL_FUNC) &_axR_axR_omapi_command_cpp, 4},
+    {"_axR_axR_omapi_get_delays_cpp", (DL_FUNC) &_axR_axR_omapi_get_delays_cpp, 1},
+    {"_axR_axR_omapi_set_delays_cpp", (DL_FUNC) &_axR_axR_omapi_set_delays_cpp, 17},
+    {"_axR_axR_omapi_get_session_id_cpp", (DL_FUNC) &_axR_axR_omapi_get_session_id_cpp, 1},
+    {"_axR_axR_omapi_set_session_id_cpp", (DL_FUNC) &_axR_axR_omapi_set_session_id_cpp, 2},
+    {"_axR_axR_omapi_get_metadata_cpp", (DL_FUNC) &_axR_axR_omapi_get_metadata_cpp, 1},
+    {"_axR_axR_omapi_set_metadata_cpp", (DL_FUNC) &_axR_axR_omapi_set_metadata_cpp, 2},
+    {"_axR_axR_omapi_get_accel_config_cpp", (DL_FUNC) &_axR_axR_omapi_get_accel_config_cpp, 1},
+    {"_axR_axR_omapi_set_accel_config_cpp", (DL_FUNC) &_axR_axR_omapi_set_accel_config_cpp, 3},
+    {"_axR_axR_omapi_erase_and_commit_cpp", (DL_FUNC) &_axR_axR_omapi_erase_and_commit_cpp, 2},
+    {"_axR_axR_omapi_get_data_info_cpp", (DL_FUNC) &_axR_axR_omapi_get_data_info_cpp, 1},
+    {"_axR_axR_omapi_begin_downloading_cpp", (DL_FUNC) &_axR_axR_omapi_begin_downloading_cpp, 4},
+    {"_axR_axR_omapi_query_download_cpp", (DL_FUNC) &_axR_axR_omapi_query_download_cpp, 1},
+    {"_axR_axR_omapi_wait_download_cpp", (DL_FUNC) &_axR_axR_omapi_wait_download_cpp, 1},
+    {"_axR_axR_omapi_cancel_download_cpp", (DL_FUNC) &_axR_axR_omapi_cancel_download_cpp, 1},
     {NULL, NULL, 0}
 };
 

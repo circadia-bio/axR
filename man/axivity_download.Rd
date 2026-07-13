@@ -5,31 +5,37 @@
 \title{Download recorded data off an Axivity device}
 \usage{
 axivity_download(
-  device_path,
-  dest_dir,
-  pattern = "\\\\.cwa$",
-  overwrite = FALSE
+  device_id,
+  dest_file,
+  offset_blocks = 0L,
+  length_blocks = -1L,
+  blocking = TRUE
 )
 }
 \arguments{
-\item{device_path}{Character. Path to the mounted device volume
-(e.g. \code{"/Volumes/CWA1234"} on macOS, or a drive letter on Windows).}
+\item{device_id}{Integer device ID, as returned by \code{\link[=axivity_discover]{axivity_discover()}}.}
 
-\item{dest_dir}{Character. Destination directory for downloaded files.
-Created (recursively) if it doesn't already exist.}
+\item{dest_file}{Character. Destination file path (existing files at
+this path are truncated).}
 
-\item{pattern}{Character. Regex to filter which files are copied,
-matched case-insensitively. Default \code{"\\\\.cwa$"}.}
+\item{offset_blocks}{Integer. Start offset of the download, in blocks.
+Default \code{0}.}
 
-\item{overwrite}{Logical. Overwrite existing files at the destination.
-Default \code{FALSE}.}
+\item{length_blocks}{Integer. Length to download, in blocks. Default
+\code{-1} (all).}
+
+\item{blocking}{Logical. If \code{TRUE} (default), block until the download
+completes, fails, or is cancelled -- equivalent to calling
+\code{\link[=axivity_download_wait]{axivity_download_wait()}} immediately after. If \code{FALSE}, return as
+soon as the download starts; poll with \code{\link[=axivity_download_status]{axivity_download_status()}}.}
 }
 \value{
-Character vector of destination file paths that were
-successfully copied.
+If \code{blocking = TRUE}, a list with \code{status} (one of \code{"complete"},
+\code{"error"}, \code{"cancelled"}) and \code{value} (a diagnostic code if \code{status}
+is \code{"error"}). If \code{blocking = FALSE}, invisibly \code{NULL}.
 }
 \description{
-Axivity devices expose recorded \code{.cwa} files over a standard USB mass
-storage interface once configured; this copies file(s) off that volume.
-\code{axR} does not parse \code{.cwa} contents -- see \code{mrpheus} or \code{zeitR} for that.
+Wraps OMAPI's \code{OmBeginDownloading()}, which runs the download on a
+background thread inside the library. \code{axR} doesn't parse \code{.cwa}
+contents -- see \code{mrpheus} or \code{zeitR} for that.
 }

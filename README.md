@@ -1,6 +1,6 @@
 # ⛏️ axR
 
-**Serial communication and data retrieval for Axivity AX3/AX6 accelerometer devices.**
+**Device discovery, status, settings, and data download for Axivity AX3/AX6 accelerometer devices.**
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1.0-276DC3)](https://www.r-project.org/)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange)](https://lifecycle.r-lib.org/articles/stages.html)
@@ -12,40 +12,61 @@
 ## 📖 What is axR?
 
 `axR` talks to Axivity AX3/AX6 accelerometers over USB: discovering connected
-devices, sending configuration and reset commands over the device's serial
-(CDC/COM port) interface, and retrieving recorded `.cwa` files off the
-device's USB mass storage volume.
+devices, querying and setting status/configuration, and downloading recorded
+`.cwa` files.
+
+Rather than reimplementing the Axivity serial protocol directly, axR wraps
+the Open Movement Project's
+[OMAPI](https://github.com/openmovementproject/libomapi) C library
+(vendored in `src/omapi`, BSD 2-clause, Newcastle University — see
+[`src/omapi/LICENSE.TXT`](src/omapi/LICENSE.TXT)). OMAPI is the same library
+behind Axivity's own OmGui software, and includes maintained,
+platform-specific device discovery (IOKit/DiskArbitration on macOS, SetupAPI
+on Windows, udev on Linux) rather than a hand-rolled equivalent.
 
 `axR` is deliberately a "dumb pipe" — it doesn't know anything about `.cwa`
 file structure. Parsing recorded data is left to downstream packages such as
 [mrpheus](https://github.com/circadia-bio/mrpheus) or
 [zeitR](https://github.com/circadia-bio/zeitR).
 
-> **Status:** early scaffold. Function signatures and docs are drafted;
-> the underlying serial I/O is not yet implemented pending protocol design
-> (baud rate, timeouts, device matching, exact command set).
+> **Status:** implemented against OMAPI but not yet tested against a
+> physical AX3/AX6 device.
 
-## ✨ Planned features
+## ✨ Features
 
-- 🔍 Device discovery — find connected Axivity devices by matching serial
-  port VID/PID against the known Axivity signature
-- ⚙️ Configuration & reset — send commands from the documented Open Movement
-  serial protocol (e.g. `FORMAT`, `FORMAT W`, RTC set)
-- 📥 Data download — copy recorded `.cwa` files off the device's USB mass
-  storage volume
+- 🔍 **Discovery** — `axivity_discover()`
+- 📊 **Status** — battery, self-test, memory health, live accelerometer
+  reading, RTC get/set, LED colour, anti-tamper lock, ECC flag, and a raw
+  `axivity_send_command()` escape hatch
+- ⚙️ **Settings** — delayed activation window, session ID, metadata
+  scratch buffer, accelerometer rate/range, and `axivity_reset()` (erase +
+  commit, with `none`/`delete`/`quickformat`/`wipe` levels)
+- 📥 **Download** — `axivity_download()`, backed by OMAPI's own background
+  download thread (progress polling and cancellation included), not a
+  plain file copy
+
+There's no `axivity_open()`/`close()` step — the OMAPI session starts when
+axR is loaded and stops when it's unloaded. Every function takes a
+`device_id` from `axivity_discover()`.
 
 ## 🗂️ Project Structure
 
 ```
 axR/
+├── configure              # generates src/Makevars at install time (chmod +x!)
 ├── R/
 │   ├── axR-package.R   # package-level documentation
-│   ├── serial.R        # discover / open / close / send_command / reset
-│   └── download.R      # axivity_download()
+│   ├── zzz.R            # .onLoad/.onUnload (OmStartup/OmShutdown), .om_check()
+│   ├── discover.R        # axivity_discover()
+│   ├── status.R          # battery, self-test, memory health, accelerometer,
+│   │                       # RTC, LED, lock, ECC, send_command
+│   ├── settings.R        # delays, session ID, metadata, accel config, reset
+│   └── download.R        # data info, download, download_status/wait/cancel
 ├── src/
-│   ├── serial.cpp       # POSIX termios.h / Windows kernel32 scaffold
-│   ├── Makevars         # POSIX build config
-│   └── Makevars.win     # Windows build config
+│   ├── axR-omapi.cpp     # thin Rcpp wrapper around OMAPI
+│   ├── omapi/             # vendored OMAPI C library (BSD 2-clause)
+│   ├── Makevars.in       # template; configure fills in the platform-specific bits
+│   └── Makevars.win      # Windows build config (static, no template needed)
 ├── tests/testthat/
 ├── man/figures/logo.svg
 ├── DESCRIPTION
@@ -59,11 +80,12 @@ axR/
 - R (>= 4.1.0)
 - Rcpp
 - A C/C++ toolchain (Xcode CLT on macOS, Rtools44 on Windows)
+- **Linux only:** `libudev-dev` (or equivalent) for device discovery
 
 ### Installation
 
 ```r
-# not yet on r-universe — install from source once functional:
+# not yet on r-universe — install from source:
 remotes::install_github("circadia-bio/axR")
 ```
 
@@ -71,7 +93,7 @@ remotes::install_github("circadia-bio/axR")
 
 | Package | Version   | Purpose                          |
 |---------|-----------|-----------------------------------|
-| Rcpp    | >= 1.0.0  | Compiled serial I/O (termios/kernel32) |
+| Rcpp    | >= 1.0.0  | Bridges R to the vendored OMAPI C library |
 
 ## 👥 Authors
 
@@ -88,6 +110,8 @@ remotes::install_github("circadia-bio/axR")
 
 ## 📄 Licence
 
-Released under the [MIT License](./LICENSE).
+Released under the [MIT License](./LICENSE). Vendored OMAPI code in
+`src/omapi` is BSD 2-clause, Copyright © Newcastle University — see
+[`src/omapi/LICENSE.TXT`](src/omapi/LICENSE.TXT).
 
 Copyright © Lucas França, 2026
