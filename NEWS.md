@@ -141,6 +141,64 @@
     verified-working parts of the package change, or discovery starts
     working and more sections can be flipped to `eval = TRUE`.
 
+### Documentation
+
+* Added a vignette (`vignettes/axR.Rmd`, `vignette("axR")`) walking
+  through discovery, status/settings, downloading,
+  `axivity_copy_data()`, and `axivity_read_cwa()`. `VignetteBuilder: knitr`
+  added to `DESCRIPTION`.
+* **Pre-computed vignette pattern:** `vignettes/axR.Rmd.orig` is the
+  real source (excluded from the built package via `.Rbuildignore`);
+  `vignettes/axR.Rmd` is generated from it via
+  `knitr::knit("vignettes/axR.Rmd.orig", "vignettes/axR.Rmd")`, run
+  locally, and the *result* of that (with real output baked in) is
+  what's committed and shipped. This means r-universe/CRAN builds never
+  need to execute any axR code to build the vignette -- it's already
+  static by the time it's built there.
+  - Only the `axivity_read_cwa()` section currently has `eval = TRUE`
+    in the `.orig` source, since that's the only part of axR verified
+    working against real hardware right now. Discovery/status/settings/
+    download chunks stay `eval = FALSE` (illustrative only) until
+    discovery is fixed and those can be genuinely re-run and re-baked.
+  - Re-run the `knitr::knit()` step and re-commit `axR.Rmd` whenever the
+    verified-working parts of the package change, or discovery starts
+    working and more sections can be flipped to `eval = TRUE`.
+
+### pkgdown site & CI
+
+* `_pkgdown.yml`: same structure as zeitR/mrpheus (Bootstrap 5 + bslib
+  theming, OpenGraph meta, navbar/footer layout), using axR's own hex
+  sticker palette (navy `#014370`, coral `#FC544A`, peach `#FFA75D`,
+  cream `#FFECD4`). Reference index grouped by discovery/status/
+  settings/download/reading/diagnostics.
+* `.github/workflows/R-CMD-check.yaml`: same ubuntu/macOS/windows
+  matrix as zeitR/mrpheus, plus two axR-specific steps the reference
+  workflow doesn't need: installing `libudev-dev` on the Linux runner
+  (not something `setup-r-dependencies` auto-detects from a prose
+  `SystemRequirements` field), and `chmod +x configure cleanup` before
+  checking (POSIX only -- Windows uses the static `Makevars.win`).
+* `.github/workflows/pkgdown.yaml`: same build-site / coverage-badge /
+  deploy-to-`gh-pages` structure as zeitR/mrpheus (via
+  `JamesIves/github-pages-deploy-action`), with the same `libudev-dev`/
+  `chmod +x` steps added for the same reason as the check workflow.
+  **Deviates from the reference workflow in one place:** only copies
+  `logo.png` to `docs/`, not `card.png` -- axR doesn't have a `card.png`
+  (the wider social-preview composite, distinct from the hex logo
+  itself) yet. Add that `cp` line back once one exists.
+* `man/figures/logo.png` (1080x1241, rasterized from `logo.svg` via
+  `rsvg-convert`) and `pkgdown/favicon/` (via
+  `pkgdown::build_favicons()`, hitting realfavicongenerator.net's API)
+  added -- needed by the pkgdown workflow's OpenGraph image copy and
+  favicon `<link>` tags respectively; didn't exist before this.
+* `DESCRIPTION`: added `covr`/`pkgdown` to `Suggests`; `URL` now lists
+  the pkgdown site alongside the GitHub repo, matching zeitR/mrpheus's
+  convention.
+* `README.md`: added R CMD CHECK, coverage, and pkgdown-site badges,
+  matching zeitR/mrpheus.
+* Netlify deployment (watching `gh-pages`, domain `axr.circadia-lab.uk`)
+  is a manual step outside this repo -- not something a commit here can
+  configure.
+
 ### Known gaps
 
 * `axivity_discover()` is not yet finding a real AX3 device (macOS

@@ -4,6 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1.0-276DC3)](https://www.r-project.org/)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange)](https://lifecycle.r-lib.org/articles/stages.html)
+[![R CMD CHECK](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/axR/gh-pages/badges/coverage.json)](https://github.com/circadia-bio/axR/actions/workflows/pkgdown.yaml)
+[![pkgdown](https://img.shields.io/badge/docs-axr.circadia--lab.uk-FC544A)](https://axr.circadia-lab.uk)
 
 ---
 

@@ -26,6 +26,8 @@ SystemRequirements: On Linux, libudev (e.g. 'libudev-dev' on
     Debian/Ubuntu) is required for device discovery. macOS and Windows
     use OS frameworks/APIs with no separate install step.
 Suggests:
+    covr,
+    pkgdown,
     testthat (>= 3.1.4),
     tibble,
     knitr,
@@ -33,7 +35,7 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Lifecycle: experimental
-URL: https://github.com/circadia-bio/axR
+URL: https://axr.circadia-lab.uk, https://github.com/circadia-bio/axR
 BugReports: https://github.com/circadia-bio/axR/issues
 Config/roxygen2/version: 8.0.0
 RoxygenNote: 7.3.3

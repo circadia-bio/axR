@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460" width="400" height="460"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><defs>
+    <clipPath id="hexClip">
+      <polygon points="200,10 380,120 380,340 200,450 20,340 20,120"></polygon>
+    </clipPath>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#014370"></stop>
+      <stop offset="100%" stop-color="#1B6799"></stop>
+    </linearGradient>
+    <linearGradient id="axeMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFECD4"></stop>
+      <stop offset="100%" stop-color="#FFA75D"></stop>
+    </linearGradient>
+  </defs><polygon points="200,6 384,118 384,342 200,454 16,342 16,118" fill="none" stroke="#9BDFE2" stroke-width="14"></polygon><g clip-path="url(#hexClip)">
+    <polygon points="200,10 380,120 380,340 200,450 20,340 20,120" fill="url(#bgGrad)"></polygon>
+
+    <!-- scattered "ore" / data points being unearthed -->
+    <circle cx="300" cy="150" r="3" fill="#9BDFE2" opacity="0.7"></circle>
+    <circle cx="130" cy="330" r="2.5" fill="#FFECD4" opacity="0.6"></circle>
+    <circle cx="90" cy="170" r="2.5" fill="#FFECD4" opacity="0.5"></circle>
+    <circle cx="330" cy="300" r="3" fill="#9BDFE2" opacity="0.7"></circle>
+    <circle cx="270" cy="370" r="2" fill="#FC544A" opacity="0.7"></circle>
+    <circle cx="150" cy="120" r="2" fill="#FC544A" opacity="0.5"></circle>
+
+    <!-- ground line -->
+    <path d="M20,325 Q200,295 380,325 L380,450 L20,450 Z" fill="#014370" opacity="0.55"></path>
+    <path d="M20,325 Q200,295 380,325" fill="none" stroke="#1B6799" stroke-width="3" opacity="0.8"></path>
+
+    <!-- Pixel-art pickaxe silhouette, mirrored horizontally, recoloured -->
+    <g transform="translate(299,101) scale(-9,9)">
+      <path d="M8 2H11V3H13V4H15V5H17V7H18V9H19V11H20V14H18V12H17V11H16V10H14V9H13V8H12V6H11V5H10V4H8M11 9H12V10H13V11H12V12H11V13H10V14H9V15H8V16H7V17H6V18H5V19H4V20H3V21H2V20H1V19H2V18H3V17H4V16H5V15H6V14H7V13H8V12H9V11H10V10H11" fill="url(#axeMetal)" stroke="#FC544A" stroke-width="0.6" stroke-linejoin="miter"></path>
+    </g>
+
+    <!-- glint near blade tip -->
+    <g stroke="#FFECD4" stroke-width="2" opacity="0.85">
+      <line x1="103" y1="203" x2="103" y2="217"></line>
+      <line x1="96" y1="210" x2="110" y2="210"></line>
+    </g>
+  </g><text x="200" y="365" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="44" font-weight="700" letter-spacing="1"><tspan fill="#FFECD4">ax</tspan><tspan fill="#FC544A">R</tspan></text></svg>

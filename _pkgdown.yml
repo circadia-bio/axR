@@ -1,0 +1,253 @@
+url: https://axr.circadia-lab.uk
+
+template:
+  bootstrap: 5
+  bslib:
+    # ── Colours (axR hex sticker palette) ──────────────────────────────────────
+    # navy #014370 | coral #FC544A | peach #FFA75D | cream #FFECD4 | cyan #9BDFE2
+    bg:              "#F7F3ED"          # warm off-white
+    fg:              "#014370"          # navy
+    primary:         "#FC544A"          # coral
+    secondary:       "#1B6799"          # mid-blue
+    success:         "#1B6799"          # mid-blue
+    info:            "#FFA75D"          # peach
+    warning:         "#FFA75D"          # peach
+    danger:          "#FC544A"          # coral
+
+    # ── Fonts ───────────────────────────────────────────────────────────────────
+    base_font:       {google: "DM Sans"}
+    heading_font:    {google: "DM Sans"}
+    code_font:       {google: "JetBrains Mono"}
+
+    # ── Typography ────────────────────────────────────────────────────────────
+    font-size-base:  "1rem"
+    headings-font-weight: 700
+
+    # ── Cards / surfaces ──────────────────────────────────────────────────────
+    card-bg:         "#FFFCF7"          # warm white
+    card-border-color: "#FFECD4"        # cream
+    card-border-radius: "0.75rem"
+
+    # ── Code blocks ───────────────────────────────────────────────────────────
+    pre-bg:          "#014370"          # navy
+    pre-color:       "#FFECD4"          # cream
+
+  includes:
+    in_header: |
+      <!-- Override pkgdown og:image with raster PNG for social sharing -->
+      <meta property="og:image" content="https://axr.circadia-lab.uk/logo.png">
+      <meta property="og:image:width" content="1080">
+      <meta property="og:image:height" content="1241">
+      <meta property="og:image:type" content="image/png">
+      <meta name="twitter:card" content="summary">
+      <meta name="twitter:image" content="https://axr.circadia-lab.uk/logo.png">
+      <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#FC544A">
+      <meta name="msapplication-TileColor" content="#014370">
+      <meta name="theme-color" content="#014370">
+      <style>
+        /* ── Navbar ── */
+        .navbar {
+          background-color: #014370 !important;
+          border-bottom: 2px solid #FC544A;
+        }
+        .navbar .navbar-brand,
+        .navbar-nav .nav-link,
+        .navbar-nav .nav-link:hover,
+        .navbar .navbar-toggler-icon,
+        .navbar form .btn {
+          color: #FFECD4 !important;
+        }
+        .navbar-nav .nav-link:hover { opacity: 0.8; }
+        .navbar-nav .nav-link.active {
+          color: #FFECD4 !important;
+          border-bottom: 2px solid #FC544A;
+        }
+        .navbar small.nav-text { color: #FFA75D !important; }
+
+        /* ── Navbar logo size ── */
+        .navbar-brand img { height: 40px; width: auto; }
+
+        /* ── Dropdown menus: cap height and scroll instead of silently
+           running past the viewport edge with no visible cue ── */
+        .navbar .dropdown-menu {
+          max-height: calc(100vh - 90px);
+          overflow-y: auto;
+        }
+
+        /* ── Remove border under page title ── */
+        .page-header { border-bottom: none !important; }
+
+        /* ── Sidebar TOC links ── */
+        .sidebar .nav-link,
+        .sidebar a,
+        #toc a,
+        #toc .nav-link {
+          color: #014370 !important;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar a:hover,
+        #toc a:hover {
+          color: #FC544A !important;
+        }
+        .sidebar .nav-link.active,
+        #toc .nav-link.active {
+          color: #FC544A !important;
+          border-left: 2px solid #FFA75D;
+          font-weight: 600;
+        }
+
+        /* ── text-muted ── */
+        .text-muted { color: #1B6799 !important; }
+
+        /* ── Sidebar border ── */
+        .sidebar { border-left: 3px solid #FFA75D; padding-left: 1rem; }
+
+        /* ── Reference index section headers ── */
+        .reference-index h2 {
+          color: #FC544A;
+          font-size: 0.8rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+
+        /* ── Inline code ── */
+        code { color: #FC544A; background: #FFECD4;
+          border-radius: 4px; padding: 0.1em 0.35em; }
+
+        /* ── Links ── */
+        a { color: #FC544A; }
+        a:hover { color: #FFA75D; }
+
+        /* ── Footer ── */
+        .footer { background: #014370; color: #FFECD4; padding: 1.5rem 0; }
+        .footer a { color: #FC544A; }
+
+        /* ── Search ── */
+        #search-input { border-color: #FFA75D; }
+
+        /* ── Buttons ── */
+        .btn-primary {
+          background-color: #FC544A !important;
+          border-color: #FC544A !important;
+          color: #FFECD4 !important;
+        }
+        .btn-primary:hover {
+          background-color: #FFA75D !important;
+          border-color: #FFA75D !important;
+          color: #014370 !important;
+        }
+      </style>
+
+logo: man/figures/logo.svg
+
+opengraph:
+  image:
+    src: https://axr.circadia-lab.uk/logo.png
+    alt: "axR - Device communication and .cwa file reading for Axivity devices"
+  twitter:
+    creator: "@circadia_lab"
+    card: summary
+
+home:
+  title: "axR — Device communication and .cwa file reading for Axivity devices"
+  description: >
+    Talks to Axivity AX3/AX6 accelerometer devices: discovery, status,
+    settings, data download, and reading recorded .cwa/AX6 binary files.
+    Wraps the Open Movement Project's OMAPI C library rather than
+    reimplementing the serial protocol or binary file format directly.
+    Part of the Circadia Lab R ecosystem at Northumbria University.
+  links:
+  - text: Circadia Lab
+    href: https://circadia-lab.uk
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/axR.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/circadia-bio/axR
+      aria-label: GitHub
+
+reference:
+- title: "Discovery"
+  desc: "Find connected Axivity devices."
+  contents:
+  - axivity_discover
+
+- title: "Status"
+  desc: "Battery, self-test, memory health, accelerometer, RTC, LED, lock, ECC."
+  contents:
+  - axivity_get_battery
+  - axivity_self_test
+  - axivity_get_memory_health
+  - axivity_get_accelerometer
+  - axivity_get_time
+  - axivity_set_led
+  - axivity_is_locked
+  - axivity_get_ecc
+  - axivity_send_command
+
+- title: "Settings"
+  desc: "Delayed activation, session ID, metadata, accelerometer config, erase."
+  contents:
+  - axivity_get_delays
+  - axivity_get_session_id
+  - axivity_get_metadata
+  - axivity_get_accel_config
+  - axivity_reset
+
+- title: "Data download"
+  desc: "Retrieve recorded data from a connected device, or a fallback for
+    when device discovery isn't finding it."
+  contents:
+  - axivity_get_data_info
+  - axivity_download
+  - axivity_download_status
+  - axivity_copy_data
+
+- title: "Reading .cwa files"
+  desc: "Parse recorded .cwa/AX6 binary files directly, no device required."
+  contents:
+  - axivity_read_cwa
+
+- title: "Diagnostics"
+  desc: "Tools for debugging device discovery/communication issues."
+  contents:
+  - axivity_enable_debug_log
+
+- title: "Package"
+  desc: "Package-level documentation."
+  contents:
+  - axR-package
+
+articles:
+- title: "Getting started"
+  navbar: ~
+  contents:
+  - axR
+
+news:
+  releases:
+  - text: "Changelog"
+    href: news/index.html
+
+authors:
+  Lucas França:
+    href: https://orcid.org/0000-0003-0853-1319
+
+footer:
+  structure:
+    left: [package, developed_by]
+    right: [built_with]
+  components:
+    package: >
+      **axR** — Circadia Lab, Northumbria University.
+    developed_by: >
+      Lucas França.
