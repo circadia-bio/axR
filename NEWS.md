@@ -211,6 +211,11 @@
 * `axivity_get_metadata()`'s padding-trim regex hasn't been checked
   against a real device's returned buffer.
 
+### Authors
+
+* Added Mario Leocadio-Miguel as an author (`DESCRIPTION`, `_pkgdown.yml`,
+  `README.md`, `LICENSE`, `LICENSE.md`).
+
 ### Vendored code patches
 
 * `src/omapi/omapi-devicefinder-mac.c`: `kIOMasterPortDefault` ->

@@ -5,7 +5,11 @@ Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
            role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0003-0853-1319")))
+           comment = c(ORCID = "0000-0003-0853-1319")),
+    person("Mario", "Leocadio-Miguel",
+           email = "mario.miguel@northumbria.ac.uk",
+           role = "aut",
+           comment = c(ORCID = "0000-0002-7248-3529")))
 Description: Serial communication and data retrieval for Axivity AX3/AX6
     accelerometer devices: device discovery, status, settings, data
     download, and reading recorded '.cwa'/AX6 binary files. Wraps the

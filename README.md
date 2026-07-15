@@ -113,6 +113,7 @@ Walks through discovery, status/settings, downloading, the
 | Role | Name | Affiliation |
 |------|------|--------------|
 | Author, maintainer | Lucas França | Circadia Lab, Northumbria University |
+| Author | Mario Leocadio-Miguel | Circadia Lab, Northumbria University |
 
 ## 🤝 Related Tools
 
@@ -127,4 +128,4 @@ Released under the [MIT License](./LICENSE). Vendored OMAPI code in
 `src/omapi` is BSD 2-clause, Copyright © Newcastle University — see
 [`src/omapi/LICENSE.TXT`](src/omapi/LICENSE.TXT).
 
-Copyright © Lucas França, 2026
+Copyright © Lucas França & Mario Leocadio-Miguel, 2026

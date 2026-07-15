@@ -46,6 +46,7 @@ need a live device connection at all.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://axr.circadia-lab.uk}
   \item \url{https://github.com/circadia-bio/axR}
   \item Report bugs at \url{https://github.com/circadia-bio/axR/issues}
 }
@@ -57,6 +58,7 @@ Useful links:
 Authors:
 \itemize{
   \item Lucas França \email{lucas.franca@northumbria.ac.uk} (\href{https://orcid.org/0000-0003-0853-1319}{ORCID})
+  \item Mario Leocadio-Miguel \email{mario.miguel@northumbria.ac.uk} (\href{https://orcid.org/0000-0002-7248-3529}{ORCID})
 }
 
 }
