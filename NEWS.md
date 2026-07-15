@@ -64,6 +64,44 @@
   original pre-OMAPI `axivity_download()` had, just under a name that
   doesn't collide with the current OMAPI-backed one.
 
+### Reading .cwa files -- `axivity_read_cwa()`
+
+* **Scope change from "dumb pipe":** axR now wraps OMAPI's own binary
+  file reader (`omapi-reader.c`, vendored, already compiled in) rather
+  than leaving all `.cwa`/AX6 parsing to zeitR. Chosen deliberately
+  over the alternative (a parity-first port of Julia's Python Condor
+  pipeline into zeitR) since OMAPI already ships a complete, working
+  reader -- wrapping it directly avoids a second, differently-sourced
+  parsing implementation. axR still doesn't do any higher-level
+  actigraphy analysis on the result (sleep detection, non-wear
+  detection, etc.) -- that's still zeitR's job downstream.
+* `axivity_read_cwa(path)`: whole block-reading loop runs in C++, not
+  R (a multi-day 100Hz recording is millions of samples; looping
+  `.Call()`s per-block from R would be a real performance problem).
+  Returns a tibble (plain data frame if `tibble` isn't installed) with
+  one row per sample: `timestamp` (`POSIXct`, sub-second precision via
+  OMAPI's fractional timestamp), `x`/`y`/`z` (accelerometer, in g),
+  `gx`/`gy`/`gz` and `mx`/`my`/`mz` (gyro/magnetometer, only present if
+  the recording has them -- e.g. AX6 in GA/GAM mode), plus
+  `light`/`temperature_c`/`battery_pct`/`sample_rate` replicated at
+  block granularity (these are per-block readings, not per-sample).
+  `device_id`, `session_id`, and `metadata` attached as attributes.
+  Doesn't require [axivity_discover()] to have found anything -- works
+  on any `.cwa`/AX6 file already on disk.
+* Added `tibble` to `Suggests`.
+* **Known issue, unverified/likely wrong:** `temperature_c` came back
+  as `-28.3` on a real AX3 (hardware rev 1.7) recording, which isn't a
+  plausible reading. The vendored conversion in `omapi-reader.c`
+  (`OM_VALUE_TEMPERATURE_MC`) hardcodes a formula for one specific
+  temperature sensor chip (MCP9700), with a comment right next to it
+  noting an alternate formula for a different chip (MCP9701) --
+  suggesting the conversion is hardware/sensor-revision-specific and
+  may not match every AX3 build. x/y/z, timestamps, and device_id all
+  independently verified correct against the same file; `temperature_c`
+  has not been verified and should not be trusted until checked against
+  OmGui's own reading for the same recording (or Axivity's hardware
+  documentation for which sensor chip this hardware revision uses).
+
 ### Design decisions
 
 * No C-level callbacks (`OmSetDownloadCallback()`/`OmSetDeviceCallback()`)
@@ -79,6 +117,29 @@
   (`match.arg()` failures), which don't require hardware.
 * Prior serial-I/O and file-copy tests moved to `attic/` (they tested the
   now-retired API).
+
+### Documentation
+
+* Added a vignette (`vignettes/axR.Rmd`, `vignette("axR")`) walking
+  through discovery, status/settings, downloading,
+  `axivity_copy_data()`, and `axivity_read_cwa()`. `VignetteBuilder: knitr`
+  added to `DESCRIPTION`.
+* **Pre-computed vignette pattern:** `vignettes/axR.Rmd.orig` is the
+  real source (excluded from the built package via `.Rbuildignore`);
+  `vignettes/axR.Rmd` is generated from it via
+  `knitr::knit("vignettes/axR.Rmd.orig", "vignettes/axR.Rmd")`, run
+  locally, and the *result* of that (with real output baked in) is
+  what's committed and shipped. This means r-universe/CRAN builds never
+  need to execute any axR code to build the vignette -- it's already
+  static by the time it's built there.
+  - Only the `axivity_read_cwa()` section currently has `eval = TRUE`
+    in the `.orig` source, since that's the only part of axR verified
+    working against real hardware right now. Discovery/status/settings/
+    download chunks stay `eval = FALSE` (illustrative only) until
+    discovery is fixed and those can be genuinely re-run and re-baked.
+  - Re-run the `knitr::knit()` step and re-commit `axR.Rmd` whenever the
+    verified-working parts of the package change, or discovery starts
+    working and more sections can be flipped to `eval = TRUE`.
 
 ### Known gaps
 

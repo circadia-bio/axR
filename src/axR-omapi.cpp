@@ -379,3 +379,146 @@ Rcpp::List axR_omapi_wait_download_cpp(int deviceId) {
 int axR_omapi_cancel_download_cpp(int deviceId) {
   return OmCancelDownload(deviceId);
 }
+
+// ---- Binary file (.cwa/AX6) reader -----------------------------------
+//
+// Wraps OMAPI's own OmReaderXXX() functions (omapi/omapi-reader.c),
+// rather than reimplementing the binary format from scratch. The entire
+// block-reading loop runs here in C++, not from R: a multi-day recording
+// at 100Hz is millions of samples, and looping .Call()s per-block (let
+// alone per-sample) from R would be a real performance problem. R gets
+// one fully-assembled result back.
+
+// RAII guard so OmReaderClose() runs on every exit path (normal return,
+// Rcpp::stop(), or a user interrupt) exactly once.
+struct ReaderGuard {
+  OmReaderHandle h;
+  ReaderGuard(OmReaderHandle h_) : h(h_) {}
+  ~ReaderGuard() { if (h) OmReaderClose(h); }
+};
+
+// [[Rcpp::export]]
+Rcpp::List axR_read_cwa_cpp(std::string path) {
+  OmReaderHandle reader = OmReaderOpen(path.c_str());
+  if (reader == NULL) {
+    Rcpp::stop("Could not open '%s' as a CWA/AX6 binary file (not found, or not a recognised format).", path.c_str());
+  }
+  ReaderGuard guard(reader);
+
+  int deviceId = 0;
+  unsigned int sessionId = 0;
+  const char* metadataPtr = OmReaderMetadata(reader, &deviceId, &sessionId);
+  std::string metadata = metadataPtr ? std::string(metadataPtr) : std::string("");
+
+  int blockSize = 0, offsetBlocks = 0, numBlocks = 0;
+  OM_DATETIME startTime = 0, endTime = 0;
+  OmReaderDataRange(reader, &blockSize, &offsetBlocks, &numBlocks, &startTime, &endTime);
+
+  std::vector<int> yearV, monthV, dayV, hourV, minuteV, secondV, fracV;
+  std::vector<double> xV, yV, zV;
+  std::vector<int> gxV, gyV, gzV;
+  std::vector<int> mxV, myV, mzV;
+  std::vector<int> lightV, temperatureMcV, batteryPctV, sampleRateV;
+
+  bool hasGyro = false;
+  bool hasMag = false;
+  bool axesKnown = false;
+
+  // Rough head-start to cut down on vector reallocations; doesn't need to
+  // be exact, just in the right ballpark (most blocks are close to full).
+  size_t estimate = (size_t)numBlocks * 120 + 16;
+  yearV.reserve(estimate); monthV.reserve(estimate); dayV.reserve(estimate);
+  hourV.reserve(estimate); minuteV.reserve(estimate); secondV.reserve(estimate); fracV.reserve(estimate);
+  xV.reserve(estimate); yV.reserve(estimate); zV.reserve(estimate);
+
+  for (int block = 0; block < numBlocks; block++) {
+    if (block % 1000 == 0) Rcpp::checkUserInterrupt();
+
+    int values = OmReaderNextBlock(reader);
+    if (values <= 0) continue;  // checksum-failed or empty block; skip, keep going
+
+    short *buf = OmReaderBuffer(reader);
+    int axes       = OmReaderGetValue(reader, OM_VALUE_AXES);
+    int accelScale = OmReaderGetValue(reader, OM_VALUE_SCALE_ACCEL);
+    int gyroScale  = OmReaderGetValue(reader, OM_VALUE_SCALE_GYRO);
+    int magScale   = OmReaderGetValue(reader, OM_VALUE_SCALE_MAG);
+    int accelAxis  = OmReaderGetValue(reader, OM_VALUE_ACCEL_AXIS);
+    int gyroAxis   = OmReaderGetValue(reader, OM_VALUE_GYRO_AXIS);
+    int magAxis    = OmReaderGetValue(reader, OM_VALUE_MAG_AXIS);
+
+    if (!axesKnown) {
+      // Assume sensor configuration (which axes are present) is constant
+      // for the whole file -- true for any normal single recording.
+      hasGyro = (gyroAxis >= 0);
+      hasMag  = (magAxis  >= 0);
+      axesKnown = true;
+      if (hasGyro) { gxV.reserve(estimate); gyV.reserve(estimate); gzV.reserve(estimate); }
+      if (hasMag)  { mxV.reserve(estimate); myV.reserve(estimate); mzV.reserve(estimate); }
+    }
+
+    int lightRaw = OmReaderGetValue(reader, OM_VALUE_LIGHT);
+    int tempMc   = OmReaderGetValue(reader, OM_VALUE_TEMPERATURE_MC);
+    int battPct  = OmReaderGetValue(reader, OM_VALUE_BATTERY_PERCENT);
+    int sr       = OmReaderGetValue(reader, OM_VALUE_SAMPLERATE);
+
+    for (int i = 0; i < values; i++) {
+      unsigned short frac = 0;
+      OM_DATETIME t = OmReaderTimestamp(reader, i, &frac);
+
+      yearV.push_back((int)OM_DATETIME_YEAR(t));
+      monthV.push_back((int)OM_DATETIME_MONTH(t));
+      dayV.push_back((int)OM_DATETIME_DAY(t));
+      hourV.push_back((int)OM_DATETIME_HOURS(t));
+      minuteV.push_back((int)OM_DATETIME_MINUTES(t));
+      secondV.push_back((int)OM_DATETIME_SECONDS(t));
+      fracV.push_back((int)frac);
+
+      if (accelAxis >= 0 && accelScale > 0) {
+        xV.push_back((double)buf[i * axes + accelAxis + 0] / accelScale);
+        yV.push_back((double)buf[i * axes + accelAxis + 1] / accelScale);
+        zV.push_back((double)buf[i * axes + accelAxis + 2] / accelScale);
+      } else {
+        xV.push_back(NA_REAL); yV.push_back(NA_REAL); zV.push_back(NA_REAL);
+      }
+
+      if (hasGyro && gyroAxis >= 0 && gyroScale > 0) {
+        gxV.push_back((int)buf[i * axes + gyroAxis + 0]);
+        gyV.push_back((int)buf[i * axes + gyroAxis + 1]);
+        gzV.push_back((int)buf[i * axes + gyroAxis + 2]);
+      }
+      if (hasMag && magAxis >= 0 && magScale > 0) {
+        mxV.push_back((int)buf[i * axes + magAxis + 0]);
+        myV.push_back((int)buf[i * axes + magAxis + 1]);
+        mzV.push_back((int)buf[i * axes + magAxis + 2]);
+      }
+
+      lightV.push_back(lightRaw);
+      temperatureMcV.push_back(tempMc);
+      batteryPctV.push_back(battPct);
+      sampleRateV.push_back(sr);
+    }
+  }
+
+  Rcpp::List out = Rcpp::List::create(
+    Rcpp::Named("device_id") = deviceId,
+    Rcpp::Named("session_id") = (double)sessionId,
+    Rcpp::Named("metadata") = metadata,
+    Rcpp::Named("year") = yearV, Rcpp::Named("month") = monthV, Rcpp::Named("day") = dayV,
+    Rcpp::Named("hour") = hourV, Rcpp::Named("minute") = minuteV, Rcpp::Named("second") = secondV,
+    Rcpp::Named("frac") = fracV,
+    Rcpp::Named("x") = xV, Rcpp::Named("y") = yV, Rcpp::Named("z") = zV,
+    Rcpp::Named("light") = lightV,
+    Rcpp::Named("temperature_mc") = temperatureMcV,
+    Rcpp::Named("battery_pct") = batteryPctV,
+    Rcpp::Named("sample_rate") = sampleRateV
+  );
+
+  if (hasGyro) {
+    out["gx"] = gxV; out["gy"] = gyV; out["gz"] = gzV;
+  }
+  if (hasMag) {
+    out["mx"] = mxV; out["my"] = myV; out["mz"] = mzV;
+  }
+
+  return out;
+}

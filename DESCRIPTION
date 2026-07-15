@@ -7,13 +7,12 @@ Authors@R: c(
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0853-1319")))
 Description: Serial communication and data retrieval for Axivity AX3/AX6
-    accelerometer devices: device discovery, status, settings, and data
-    download. Wraps the Open Movement Project's 'OMAPI' C library
-    (vendored in src/omapi, BSD 2-clause, Newcastle University; see
-    src/omapi/LICENSE.TXT), rather than reimplementing the serial
-    protocol directly. Does not parse '.cwa' files; that is left to
-    downstream packages (see mrpheus, zeitR). Part of the Circadia Lab
-    R ecosystem.
+    accelerometer devices: device discovery, status, settings, data
+    download, and reading recorded '.cwa'/AX6 binary files. Wraps the
+    Open Movement Project's 'OMAPI' C library (vendored in src/omapi,
+    BSD 2-clause, Newcastle University; see src/omapi/LICENSE.TXT),
+    rather than reimplementing the serial protocol or binary file format
+    directly. Part of the Circadia Lab R ecosystem.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -28,8 +27,10 @@ SystemRequirements: On Linux, libudev (e.g. 'libudev-dev' on
     use OS frameworks/APIs with no separate install step.
 Suggests:
     testthat (>= 3.1.4),
+    tibble,
     knitr,
     rmarkdown
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Lifecycle: experimental
 URL: https://github.com/circadia-bio/axR
