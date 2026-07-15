@@ -55,6 +55,14 @@
 * `axivity_get_data_info()`: file size, filename, block layout, and
   recorded time range, from `OmGetDataFileSize()`/`OmGetDataFilename()`/
   `OmGetDataRange()`.
+* `axivity_copy_data(device_path, dest_dir, ...)`: a fallback that
+  bypasses OMAPI/`device_id` entirely and copies `.cwa` files straight
+  off a mounted volume path -- for use while `axivity_discover()`
+  isn't finding the device via OMAPI's IOKit-level discovery, but the
+  mass-storage side still mounts fine regardless (as it did during
+  testing -- see "Known gaps" below). Same plain-file-copy logic the
+  original pre-OMAPI `axivity_download()` had, just under a name that
+  doesn't collide with the current OMAPI-backed one.
 
 ### Design decisions
 
@@ -74,7 +82,13 @@
 
 ### Known gaps
 
-* Not yet tested against a physical AX3/AX6 device.
+* `axivity_discover()` is not yet finding a real AX3 device (macOS
+  26.2), despite `ioreg` confirming the device enumerates correctly at
+  the IOKit level with the expected VID/PID (`0x04D8`/`0x0057`) and
+  serial (`CWA17_46171`). Root cause not yet identified -- waiting on
+  input from an Axivity/OMAPI contact. The device's USB mass-storage
+  volume mounts fine independent of this, which is what
+  `axivity_copy_data()` (above) works around in the meantime.
 * `axivity_get_metadata()`'s padding-trim regex hasn't been checked
   against a real device's returned buffer.
 
