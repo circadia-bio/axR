@@ -216,6 +216,29 @@
 * Added Mario Leocadio-Miguel as an author (`DESCRIPTION`, `_pkgdown.yml`,
   `README.md`, `LICENSE`, `LICENSE.md`).
 
+### Vendored code patches (Linux)
+
+* `omapi-devicefinder-linux.c` had never been compiled until the
+  R-CMD-check GitHub Actions Linux runner did it for the first time --
+  everything up to this point was only ever tested on macOS. Same
+  class of issues as the Mac finder, none previously caught:
+  - Three `exit(1)` calls on `udev_new()` failure (`GetSerialDevice()`,
+    `InitDeviceFinder()`, and the background `OmDeviceDiscoveryThread()`)
+    would each terminate the whole R process. Replaced with early
+    returns (`return;` / `return NULL;` matching each function's
+    signature) -- the callers already handle the failure gracefully
+    (e.g. checking `strlen(serial_device) > 0`).
+  - This file never used `OmLog()` at all, only raw `printf()`/
+    `fprintf(stderr, ...)`, including one *unconditional* debug
+    `printf("DEVICE-ACTION: ...")` inside the background monitoring
+    loop that would have spammed stdout on every udev event. All
+    converted to `OmLog()` calls (matching the Mac finder's
+    convention) rather than just deleted, so Linux keeps the same
+    diagnostic capability via `axivity_enable_debug_log()`.
+  - Untested against real hardware on Linux -- these are correctness
+    fixes for what `R CMD check` flagged, not a claim that Linux
+    device discovery has been verified working end-to-end.
+
 ### Vendored code patches
 
 * `src/omapi/omapi-devicefinder-mac.c`: `kIOMasterPortDefault` ->

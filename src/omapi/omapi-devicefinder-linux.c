@@ -159,8 +159,12 @@ static void GetSerialDevice(const char *serial_id, char *serial_device)
     udev = udev_new();
     if (!udev)
     {
-        printf("ERROR: Can't create udev (serial)\n");
-        exit(1);
+        // axR patch: exit(1) here would terminate the whole R process, not
+        // just this function -- replaced with an early return. The caller
+        // already handles an empty serial_device gracefully (checks
+        // strlen(serial_device) > 0), so this is a safe, quiet failure.
+        OmLog(2, "ERROR: Can't create udev (serial).\n");
+        return;
     }
 
     // Find serial devices with vendor id and product id and serial id.
@@ -218,14 +222,20 @@ static void InitDeviceFinder()
         // e.g.:
         //   ls -l /mnt/e/CWA-DATA.CWA
         //   echo -e "LED 1\r\n">>/dev/ttyS51
-        fprintf(stderr, "WARNING: Running under WSL -- device discovery will not work.\n");
+        // axR patch: OmLog() instead of a raw fprintf(stderr, ...) --
+        // compiled code shouldn't write to stdout/stderr directly inside R.
+        OmLog(2, "WARNING: Running under WSL -- device discovery will not work.\n");
     }
 
     udev = udev_new();
     if (!udev)
     {
-        printf("ERROR: Can't create udev (init)\n");
-        exit(1);
+        // axR patch: exit(1) -> early return, see the note in
+        // GetSerialDevice() above. InitDeviceFinder() is void and called
+        // once at startup; failing quietly here just means no devices get
+        // added yet, rather than killing the R process outright.
+        OmLog(2, "ERROR: Can't create udev (init).\n");
+        return;
     }
 
     // Find block devices with vendor id and product id.
@@ -308,7 +318,7 @@ static char WaitUntilReadable(const char *path)
             int nw = write(fd, wc, strlen(wc));
             if (nw != (int)strlen(wc))
             {
-                printf("WARNING: Problem writing flush command to port.\n");
+                OmLog(2, "WARNING: Problem writing flush command to port.\n");
             }
 // printf("WROTE: %d %s\n", nw, wc);
             // Read a line (with timeout)
@@ -352,8 +362,13 @@ static void *OmDeviceDiscoveryThread(void *arg)
     udev = udev_new();
     if (!udev)
     {
-        printf("ERROR: Can't create udev (thread)\n");
-        exit(1);
+        // axR patch: exit(1) -> return NULL, matching this function's
+        // void* return type. This runs on the background discovery
+        // pthread -- ending the thread early on failure, rather than
+        // exit()ing the whole process out from under R, is the same fix
+        // as the other two udev_new() failure sites above.
+        OmLog(2, "ERROR: Can't create udev (thread).\n");
+        return NULL;
     }
 
     mon = udev_monitor_new_from_netlink(udev, "udev");
@@ -376,7 +391,11 @@ static void *OmDeviceDiscoveryThread(void *arg)
             // Get block device name.
             const char *block_device = udev_device_get_devnode(dev);
 
-printf("DEVICE-ACTION: %s %s\n", action, block_device);
+            // axR patch: was an unconditional printf() -- would spam
+            // stdout on every single udev event from this background
+            // thread. OmLog() at debug level 3 keeps the trace available
+            // via axivity_enable_debug_log() without doing that.
+            OmLog(3, "DEVICE-ACTION: %s %s\n", action, block_device);
 
             if (strcmp(action, "remove") == 0)
             {
