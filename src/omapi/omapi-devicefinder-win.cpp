@@ -241,7 +241,14 @@ bool DeviceFinder::Initialize(void)
     if (FAILED(hr)) { Log(0, "ERROR: Failed to create IWbemLocator object: 0x%08x\n", hr); CoUninitialize(); return false; }
 
     // Connect to the root\cimv2 WMI namespace through the IWbemLocator::ConnectServer method with the current user and obtain pointer pSvc to make IWbemServices calls.
-    hr = ((IWbemLocator *)pLoc)->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0, NULL, 0, 0, (IWbemServices **)&pSvc);
+    // axR patch: replaced _bstr_t(...) with plain SysAllocString() --
+    // _bstr_t (via _com_util::ConvertStringToBSTR) needs the MSVC-specific
+    // comsuppw library, which Rtools45's MinGW-w64 doesn't ship
+    // ("cannot find -lcomsuppw" at link time). SysAllocString() is plain
+    // Win32 OLE Automation, no extra library needed.
+    BSTR bstrNamespace = SysAllocString(L"ROOT\\CIMV2");
+    hr = ((IWbemLocator *)pLoc)->ConnectServer(bstrNamespace, NULL, NULL, 0, NULL, 0, 0, (IWbemServices **)&pSvc);
+    SysFreeString(bstrNamespace);
     if (FAILED(hr)) { Log(0, "ERROR: Could not connect to WMI ROOT\\CIMV2: 0x%08x\n", hr); ((IWbemLocator *)pLoc)->Release(); pLoc = NULL; CoUninitialize(); return false; }
 
     // Set security levels on the proxy
@@ -697,7 +704,13 @@ bool DeviceFinder::MappingUsbstorToDeviceNumber(std::map<std::string, int>& usbS
     IEnumWbemClassObject* pEnumerator = NULL;
 	IWbemServices *pServices = (IWbemServices *)pSvc;	// Cast required as the public API doesn't include the type information
 	if (pServices == NULL) { Log(0, "ERROR: Unable to get usbstor-deviceNumber mapping.\n");  return false; }
-	hr = pServices->ExecQuery(bstr_t("WQL"), bstr_t("SELECT PNPDeviceID, DeviceID FROM Win32_DiskDrive WHERE InterfaceType='USB'"), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+    // axR patch: replaced bstr_t(...) with plain SysAllocString(), see
+    // the note in Initialize() above -- same comsuppw problem.
+    BSTR bstrWql = SysAllocString(L"WQL");
+    BSTR bstrQuery = SysAllocString(L"SELECT PNPDeviceID, DeviceID FROM Win32_DiskDrive WHERE InterfaceType='USB'");
+	hr = pServices->ExecQuery(bstrWql, bstrQuery, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+    SysFreeString(bstrWql);
+    SysFreeString(bstrQuery);
     if (FAILED(hr)) { Log(0, "ERROR: Query for Win32_DiskDrive has failed: 0x%08x\n", hr); return false; }
 
     // Get the data from the query

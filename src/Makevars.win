@@ -11,19 +11,15 @@
 # GUID_DEVINTERFACE_DISK/GUID_DEVINTERFACE_VOLUME (the standard MinGW-w64
 # fix for "undefined reference to GUID_XXX" -- tried #define INITGUID in
 # the source first, which caused a worse header-double-inclusion problem;
-# see the note in omapi-devicefinder-win.cpp). comsuppw is still the most
-# uncertain addition: it's the library backing _bstr_t/_com_util (used
-# throughout this file's WMI queries via bstr_t("...")), historically an
-# MSVC-specific component -- as of the last CI run, the build hadn't even
-# reached the link step yet (it failed at compile time on the GUID issue
-# instead), so whether comsuppw actually resolves
-# _com_util::ConvertStringToBSTR is still untested. If linking fails
-# specifically on that symbol next run, the real fix is rewriting the WMI
-# query construction to avoid _bstr_t entirely (e.g. via
-# SysAllocString()), not another library name to try.
+# see the note in omapi-devicefinder-win.cpp). No comsuppw: confirmed via
+# CI ("cannot find -lcomsuppw: No such file or directory") that Rtools45's
+# MinGW-w64 doesn't ship it. The two _bstr_t/_com_util::ConvertStringToBSTR
+# usages that needed it were rewritten in omapi-devicefinder-win.cpp to use
+# plain SysAllocString()/SysFreeString() instead (both were static string
+# literals, no dynamic narrow-to-wide conversion needed).
 
 PKG_CPPFLAGS = -Iomapi
-PKG_LIBS = -lsetupapi -ladvapi32 -lole32 -loleaut32 -lwbemuuid -luuid -lcomsuppw
+PKG_LIBS = -lsetupapi -ladvapi32 -lole32 -loleaut32 -lwbemuuid -luuid
 
 OBJECTS = RcppExports.o axR-omapi.o omapi/omapi-main.o omapi/omapi-internal.o \
           omapi/omapi-download.o omapi/omapi-status.o omapi/omapi-reader.o \
