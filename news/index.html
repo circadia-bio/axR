@@ -241,6 +241,27 @@
 <ul><li>Added Mario Leocadio-Miguel as an author (<code>DESCRIPTION</code>, <code>_pkgdown.yml</code>, <code>README.md</code>, <code>LICENSE</code>, <code>LICENSE.md</code>).</li>
 </ul></div>
 <div class="section level3">
+<h3 id="vendored-code-patches-linux-0-0-0-9000">Vendored code patches (Linux)<a class="anchor" aria-label="anchor" href="#vendored-code-patches-linux-0-0-0-9000"></a></h3>
+<ul><li>
+<code>omapi-devicefinder-linux.c</code> had never been compiled until the R-CMD-check GitHub Actions Linux runner did it for the first time – everything up to this point was only ever tested on macOS. Same class of issues as the Mac finder, none previously caught:
+<ul><li>Three <code>exit(1)</code> calls on <code>udev_new()</code> failure (<code>GetSerialDevice()</code>, <code>InitDeviceFinder()</code>, and the background <code>OmDeviceDiscoveryThread()</code>) would each terminate the whole R process. Replaced with early returns (<code>return;</code> / <code>return NULL;</code> matching each function’s signature) – the callers already handle the failure gracefully (e.g. checking <code>strlen(serial_device) &gt; 0</code>).</li>
+<li>This file never used <code>OmLog()</code> at all, only raw <code>printf()</code>/ <code>fprintf(stderr, ...)</code>, including one <em>unconditional</em> debug <code>printf("DEVICE-ACTION: ...")</code> inside the background monitoring loop that would have spammed stdout on every udev event. All converted to <code>OmLog()</code> calls (matching the Mac finder’s convention) rather than just deleted, so Linux keeps the same diagnostic capability via <code><a href="../reference/axivity_enable_debug_log.html">axivity_enable_debug_log()</a></code>.</li>
+<li>Untested against real hardware on Linux – these are correctness fixes for what <code>R CMD check</code> flagged, not a claim that Linux device discovery has been verified working end-to-end.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="vendored-code-patches-windows--unverified-iterating-via-ci-0-0-0-9000">Vendored code patches (Windows) – unverified, iterating via CI<a class="anchor" aria-label="anchor" href="#vendored-code-patches-windows--unverified-iterating-via-ci-0-0-0-9000"></a></h3>
+<ul><li>
+<code>omapi-devicefinder-win.cpp</code> failed to <em>link</em> on the R-CMD-check GitHub Actions Windows runner (Rtools45/MinGW-w64) – first time this file had ever actually been built; unlike the macOS/Linux fixes above, neither of us has a Windows machine to verify against, so this is a best-effort fix pending the next CI run, not a confirmed one.
+<ul><li>
+<code>GUID_DEVINTERFACE_DISK</code>/<code>GUID_DEVINTERFACE_VOLUME</code> undefined at link time: fixed by defining <code>INITGUID</code> before <code>&lt;windows.h&gt;</code> and everything that pulls it in, so the GUID data compiles in locally instead of needing an import library – a standard, compiler-agnostic convention (not MSVC-specific), low risk.</li>
+<li>
+<code>VariantClear</code>/<code>SysFreeString</code> (<code>oleaut32</code>) and <code>CLSID_WbemLocator</code>/<code>IID_IWbemLocator</code> (<code>wbemuuid</code>, needed for this file’s WMI serial-port queries) undefined: added both libs to <code>Makevars.win</code>’s <code>PKG_LIBS</code>. Confident these exist under any MinGW-w64 Windows SDK port.</li>
+<li>
+<code>_com_util::ConvertStringToBSTR</code> (used throughout via <code>_bstr_t</code>/ <code>bstr_t("...")</code> in the file’s WMI queries) undefined: added <code>-lcomsuppw</code> to <code>PKG_LIBS</code> as a first attempt. <strong>Genuinely uncertain</strong> this resolves it – <code>comsuppw</code> is historically an MSVC-specific library backing <code>_bstr_t</code>, and whether Rtools45’s MinGW-w64 ships an equivalent isn’t something either of us could verify. If the next CI run still fails specifically on this symbol, the real fix is rewriting the WMI query construction to avoid <code>_bstr_t</code> entirely (e.g. via plain <code>SysAllocString()</code>), not another library name to try.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
 <h3 id="vendored-code-patches-0-0-0-9000">Vendored code patches<a class="anchor" aria-label="anchor" href="#vendored-code-patches-0-0-0-9000"></a></h3>
 <ul><li>
 <code>src/omapi/omapi-devicefinder-mac.c</code>: <code>kIOMasterPortDefault</code> -&gt; <code>kIOMainPortDefault</code> (2 occurrences), silencing a macOS 12+ deprecation warning from <code>R CMD check</code>. Purely a rename – <code>kIOMasterPortDefault</code> remains functional, this isn’t a behaviour change. Flagged inline with <code>// axR patch</code> comments; re-apply if this file is ever re-vendored from upstream libomapi.</li>

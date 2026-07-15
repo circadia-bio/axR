@@ -264,6 +264,57 @@
 - Added Mario Leocadio-Miguel as an author (`DESCRIPTION`,
   `_pkgdown.yml`, `README.md`, `LICENSE`, `LICENSE.md`).
 
+### Vendored code patches (Linux)
+
+- `omapi-devicefinder-linux.c` had never been compiled until the
+  R-CMD-check GitHub Actions Linux runner did it for the first time –
+  everything up to this point was only ever tested on macOS. Same class
+  of issues as the Mac finder, none previously caught:
+  - Three `exit(1)` calls on `udev_new()` failure (`GetSerialDevice()`,
+    `InitDeviceFinder()`, and the background
+    `OmDeviceDiscoveryThread()`) would each terminate the whole R
+    process. Replaced with early returns (`return;` / `return NULL;`
+    matching each function’s signature) – the callers already handle the
+    failure gracefully (e.g. checking `strlen(serial_device) > 0`).
+  - This file never used `OmLog()` at all, only raw `printf()`/
+    `fprintf(stderr, ...)`, including one *unconditional* debug
+    `printf("DEVICE-ACTION: ...")` inside the background monitoring loop
+    that would have spammed stdout on every udev event. All converted to
+    `OmLog()` calls (matching the Mac finder’s convention) rather than
+    just deleted, so Linux keeps the same diagnostic capability via
+    [`axivity_enable_debug_log()`](https://axr.circadia-lab.uk/reference/axivity_enable_debug_log.md).
+  - Untested against real hardware on Linux – these are correctness
+    fixes for what `R CMD check` flagged, not a claim that Linux device
+    discovery has been verified working end-to-end.
+
+### Vendored code patches (Windows) – unverified, iterating via CI
+
+- `omapi-devicefinder-win.cpp` failed to *link* on the R-CMD-check
+  GitHub Actions Windows runner (Rtools45/MinGW-w64) – first time this
+  file had ever actually been built; unlike the macOS/Linux fixes above,
+  neither of us has a Windows machine to verify against, so this is a
+  best-effort fix pending the next CI run, not a confirmed one.
+  - `GUID_DEVINTERFACE_DISK`/`GUID_DEVINTERFACE_VOLUME` undefined at
+    link time: fixed by defining `INITGUID` before `<windows.h>` and
+    everything that pulls it in, so the GUID data compiles in locally
+    instead of needing an import library – a standard, compiler-agnostic
+    convention (not MSVC-specific), low risk.
+  - `VariantClear`/`SysFreeString` (`oleaut32`) and
+    `CLSID_WbemLocator`/`IID_IWbemLocator` (`wbemuuid`, needed for this
+    file’s WMI serial-port queries) undefined: added both libs to
+    `Makevars.win`’s `PKG_LIBS`. Confident these exist under any
+    MinGW-w64 Windows SDK port.
+  - `_com_util::ConvertStringToBSTR` (used throughout via `_bstr_t`/
+    `bstr_t("...")` in the file’s WMI queries) undefined: added
+    `-lcomsuppw` to `PKG_LIBS` as a first attempt. **Genuinely
+    uncertain** this resolves it – `comsuppw` is historically an
+    MSVC-specific library backing `_bstr_t`, and whether Rtools45’s
+    MinGW-w64 ships an equivalent isn’t something either of us could
+    verify. If the next CI run still fails specifically on this symbol,
+    the real fix is rewriting the WMI query construction to avoid
+    `_bstr_t` entirely (e.g. via plain `SysAllocString()`), not another
+    library name to try.
+
 ### Vendored code patches
 
 - `src/omapi/omapi-devicefinder-mac.c`: `kIOMasterPortDefault` -\>

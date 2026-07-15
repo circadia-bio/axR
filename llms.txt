@@ -13,8 +13,6 @@ CHECK](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/ba
 
 ------------------------------------------------------------------------
 
-![axR logo](reference/figures/logo.svg)
-
 ## 📖 What is axR?
 
 `axR` talks to Axivity AX3/AX6 accelerometers over USB: discovering
