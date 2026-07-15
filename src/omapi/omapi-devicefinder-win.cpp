@@ -29,6 +29,13 @@
 #ifdef _WIN32 // || defined(__CYGWIN__)
 
 #define _CRT_SECURE_NO_WARNINGS
+// axR patch: GUID_DEVINTERFACE_DISK/GUID_DEVINTERFACE_VOLUME are declared
+// `extern const GUID` unless INITGUID is defined before the headers that
+// declare them -- with it defined, the actual GUID data is compiled in
+// locally instead of needing an import library at link time. Standard
+// convention across Windows SDK headers (not MSVC-specific), must come
+// before windows.h and everything that pulls it in transitively.
+#define INITGUID
 #include <windows.h>
 
 #define _WIN32_DCOM

@@ -3,9 +3,22 @@
 # than udev/IOKit. setupapi and advapi32 aren't always in MinGW's default
 # link set, so they're listed explicitly; ole32 covers COM usage pulled in
 # by _WIN32_DCOM in omapi-internal.h.
+#
+# axR patch: oleaut32 (VariantClear/SysFreeString) and wbemuuid
+# (CLSID_WbemLocator/IID_IWbemLocator, needed for the file's WMI serial
+# port queries) were missing at link time under Rtools45's MinGW-w64 --
+# neither is in the default link set either. comsuppw is a more uncertain
+# addition: it's the library backing _bstr_t/_com_util (used throughout
+# this file's WMI queries via bstr_t("...")), and is historically an
+# MSVC-specific component -- untested whether Rtools45's MinGW-w64 ships
+# an equivalent. If linking still fails specifically on
+# _com_util::ConvertStringToBSTR, that's the signal this didn't resolve
+# and the WMI query construction needs rewriting to avoid _bstr_t
+# entirely (e.g. via SysAllocString()) rather than relying on a library
+# that may not exist under this toolchain.
 
 PKG_CPPFLAGS = -Iomapi
-PKG_LIBS = -lsetupapi -ladvapi32 -lole32
+PKG_LIBS = -lsetupapi -ladvapi32 -lole32 -loleaut32 -lwbemuuid -lcomsuppw
 
 OBJECTS = RcppExports.o axR-omapi.o omapi/omapi-main.o omapi/omapi-internal.o \
           omapi/omapi-download.o omapi/omapi-status.o omapi/omapi-reader.o \
