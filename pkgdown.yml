@@ -1,0 +1,9 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  axR: axR.html
+last_built: 2026-07-15T22:03Z
+urls:
+  reference: https://axr.circadia-lab.uk/reference
+  article: https://axr.circadia-lab.uk/articles
