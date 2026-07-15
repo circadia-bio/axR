@@ -89,6 +89,16 @@ axR/
 remotes::install_github("circadia-bio/axR")
 ```
 
+### Vignette
+
+```r
+vignette("axR")
+```
+
+Walks through discovery, status/settings, downloading, the
+`axivity_copy_data()` fallback, and reading `.cwa` files with
+`axivity_read_cwa()`.
+
 ## 📦 Dependencies
 
 | Package | Version   | Purpose                          |

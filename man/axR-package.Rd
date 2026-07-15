@@ -4,33 +4,43 @@
 \name{axR-package}
 \alias{axR}
 \alias{axR-package}
-\title{axR: Device Discovery, Status, Settings, and Data Download for Axivity Devices}
+\title{axR: Device Communication and .cwa File Reading for Axivity Devices}
 \description{
 Talks to Axivity AX3/AX6 accelerometer devices: discovery, status
 (battery, self-test, memory health, accelerometer, RTC, LED, lock,
 ECC), settings (delays, session ID, metadata, accelerometer config,
-erase), and data download.
+erase), data download, and reading recorded \code{.cwa}/AX6 binary files
+(\code{\link[=axivity_read_cwa]{axivity_read_cwa()}}).
 }
 \details{
-axR is a "dumb pipe" package: it talks to the device and moves bytes
-around, but does not parse \code{.cwa} file contents. Parsing is left to
-downstream packages such as \pkg{mrpheus} and \pkg{zeitR}.
+axR was originally scoped as a "dumb pipe" -- talk to the device, move
+bytes, leave file parsing to downstream packages. \code{\link[=axivity_read_cwa]{axivity_read_cwa()}}
+is a deliberate exception: OMAPI already ships a complete binary file
+reader (\code{omapi-reader.c}), and wrapping it directly is simpler and
+more consistent than reimplementing the same format a second time in
+\pkg{zeitR} from a different reference pipeline. axR does not do any
+higher-level actigraphy analysis on the parsed data (sleep detection,
+non-wear detection, etc.) -- that's still \pkg{zeitR}'s job, downstream
+of the tibble this returns.
 }
 \section{Implementation}{
 
-Rather than reimplementing the Axivity serial protocol directly, axR
-wraps the Open Movement Project's OMAPI C library (vendored in
-\code{src/omapi}, BSD 2-clause, Newcastle University -- see
-\code{src/omapi/LICENSE.TXT}). OMAPI is the same library behind Axivity's
-own OmGui software, and includes maintained, platform-specific device
-discovery (IOKit/DiskArbitration on macOS, SetupAPI on Windows, udev on
-Linux) rather than a hand-rolled equivalent.
+Rather than reimplementing the Axivity serial protocol or \code{.cwa}
+binary format directly, axR wraps the Open Movement Project's OMAPI C
+library (vendored in \code{src/omapi}, BSD 2-clause, Newcastle University
+-- see \code{src/omapi/LICENSE.TXT}). OMAPI is the same library behind
+Axivity's own OmGui software, and includes maintained,
+platform-specific device discovery (IOKit/DiskArbitration on macOS,
+SetupAPI on Windows, udev on Linux) rather than a hand-rolled
+equivalent.
 
 The OMAPI session is started when axR is loaded (\code{OmStartup()} in
 \code{.onLoad()}) and shut down when it's unloaded (\code{OmShutdown()} in
 \code{.onUnload()}) -- there's no separate \code{axivity_open()}/\code{close()} step.
-Every exported function takes a \code{device_id}, obtained from
-\code{\link[=axivity_discover]{axivity_discover()}}.
+Every device-facing function takes a \code{device_id}, obtained from
+\code{\link[=axivity_discover]{axivity_discover()}}. \code{\link[=axivity_read_cwa]{axivity_read_cwa()}} and \code{\link[=axivity_copy_data]{axivity_copy_data()}}
+are the exceptions -- they work on a file already on disk and don't
+need a live device connection at all.
 }
 
 \seealso{

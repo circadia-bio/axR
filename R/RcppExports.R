@@ -137,3 +137,7 @@ axR_omapi_cancel_download_cpp <- function(deviceId) {
     .Call(`_axR_axR_omapi_cancel_download_cpp`, deviceId)
 }
 
+axR_read_cwa_cpp <- function(path) {
+    .Call(`_axR_axR_read_cwa_cpp`, path)
+}
+

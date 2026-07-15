@@ -418,6 +418,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// axR_read_cwa_cpp
+Rcpp::List axR_read_cwa_cpp(std::string path);
+RcppExport SEXP _axR_axR_read_cwa_cpp(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(axR_read_cwa_cpp(path));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_axR_axR_omapi_startup_cpp", (DL_FUNC) &_axR_axR_omapi_startup_cpp, 0},
@@ -454,6 +465,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_axR_axR_omapi_query_download_cpp", (DL_FUNC) &_axR_axR_omapi_query_download_cpp, 1},
     {"_axR_axR_omapi_wait_download_cpp", (DL_FUNC) &_axR_axR_omapi_wait_download_cpp, 1},
     {"_axR_axR_omapi_cancel_download_cpp", (DL_FUNC) &_axR_axR_omapi_cancel_download_cpp, 1},
+    {"_axR_axR_read_cwa_cpp", (DL_FUNC) &_axR_axR_read_cwa_cpp, 1},
     {NULL, NULL, 0}
 };
 
