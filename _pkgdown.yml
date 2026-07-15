@@ -210,6 +210,7 @@ reference:
   - axivity_get_data_info
   - axivity_download
   - axivity_download_status
+  - axivity_download_cancel
   - axivity_copy_data
 
 - title: "Reading .cwa files"
