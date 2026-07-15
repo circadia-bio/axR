@@ -141,29 +141,6 @@
     verified-working parts of the package change, or discovery starts
     working and more sections can be flipped to `eval = TRUE`.
 
-### Documentation
-
-* Added a vignette (`vignettes/axR.Rmd`, `vignette("axR")`) walking
-  through discovery, status/settings, downloading,
-  `axivity_copy_data()`, and `axivity_read_cwa()`. `VignetteBuilder: knitr`
-  added to `DESCRIPTION`.
-* **Pre-computed vignette pattern:** `vignettes/axR.Rmd.orig` is the
-  real source (excluded from the built package via `.Rbuildignore`);
-  `vignettes/axR.Rmd` is generated from it via
-  `knitr::knit("vignettes/axR.Rmd.orig", "vignettes/axR.Rmd")`, run
-  locally, and the *result* of that (with real output baked in) is
-  what's committed and shipped. This means r-universe/CRAN builds never
-  need to execute any axR code to build the vignette -- it's already
-  static by the time it's built there.
-  - Only the `axivity_read_cwa()` section currently has `eval = TRUE`
-    in the `.orig` source, since that's the only part of axR verified
-    working against real hardware right now. Discovery/status/settings/
-    download chunks stay `eval = FALSE` (illustrative only) until
-    discovery is fixed and those can be genuinely re-run and re-baked.
-  - Re-run the `knitr::knit()` step and re-commit `axR.Rmd` whenever the
-    verified-working parts of the package change, or discovery starts
-    working and more sections can be flipped to `eval = TRUE`.
-
 ### pkgdown site & CI
 
 * `_pkgdown.yml`: same structure as zeitR/mrpheus (Bootstrap 5 + bslib
@@ -254,10 +231,17 @@
   above, neither of us has a Windows machine to verify against, so this
   is a best-effort fix pending the next CI run, not a confirmed one.
   - `GUID_DEVINTERFACE_DISK`/`GUID_DEVINTERFACE_VOLUME` undefined at
-    link time: fixed by defining `INITGUID` before `<windows.h>` and
-    everything that pulls it in, so the GUID data compiles in locally
-    instead of needing an import library -- a standard, compiler-agnostic
-    convention (not MSVC-specific), low risk.
+    link time: **first attempt was `#define INITGUID` before
+    `<windows.h>` -- this made things worse, not better.** It caused
+    `winioctl.h` (included both directly and transitively through
+    `windows.h`'s own chain) to be processed twice with `INITGUID`
+    active both times, and its GUID definitions weren't guarded against
+    that second pass the way its normal header-include-guard block is --
+    `"redefinition of const GUID ..."` compile errors for ~20 GUIDs,
+    not just the two originally missing. **Reverted.** Switched to
+    `-luuid` in `Makevars.win` instead -- the standard MinGW-w64 fix for
+    "undefined reference to GUID_XXX", and doesn't touch header
+    inclusion at all.
   - `VariantClear`/`SysFreeString` (`oleaut32`) and
     `CLSID_WbemLocator`/`IID_IWbemLocator` (`wbemuuid`, needed for this
     file's WMI serial-port queries) undefined: added both libs to
@@ -265,14 +249,14 @@
     MinGW-w64 Windows SDK port.
   - `_com_util::ConvertStringToBSTR` (used throughout via `_bstr_t`/
     `bstr_t("...")` in the file's WMI queries) undefined: added
-    `-lcomsuppw` to `PKG_LIBS` as a first attempt. **Genuinely
-    uncertain** this resolves it -- `comsuppw` is historically an
-    MSVC-specific library backing `_bstr_t`, and whether Rtools45's
-    MinGW-w64 ships an equivalent isn't something either of us could
-    verify. If the next CI run still fails specifically on this symbol,
-    the real fix is rewriting the WMI query construction to avoid
-    `_bstr_t` entirely (e.g. via plain `SysAllocString()`), not another
-    library name to try.
+    `-lcomsuppw` to `PKG_LIBS`. **Still genuinely untested** -- the
+    build that reported this never reached the link step at all (it
+    failed at compile time on the GUID issue above first), so whether
+    `-lcomsuppw` actually resolves this symbol is unknown until the
+    next CI run. If it still fails specifically on this symbol, the
+    real fix is rewriting the WMI query construction to avoid `_bstr_t`
+    entirely (e.g. via plain `SysAllocString()`), not another library
+    name to try.
 
 ### Vendored code patches
 
