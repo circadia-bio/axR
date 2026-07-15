@@ -1,7 +1,9 @@
 # ⛏️ axR
 
 **Device discovery, status, settings, and data download for Axivity
-AX3/AX6 accelerometer devices.** [![License:
+AX3/AX6 accelerometer devices.**
+
+[![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow)](https://axr.circadia-lab.uk/LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1.0-276DC3)](https://www.r-project.org/)
 [![Lifecycle:
