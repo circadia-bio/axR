@@ -289,16 +289,22 @@
     file’s WMI serial-port queries) undefined: added both libs to
     `Makevars.win`’s `PKG_LIBS`. Confident these exist under any
     MinGW-w64 Windows SDK port.
-  - `_com_util::ConvertStringToBSTR` (used throughout via `_bstr_t`/
-    `bstr_t("...")` in the file’s WMI queries) undefined: added
-    `-lcomsuppw` to `PKG_LIBS`. **Still genuinely untested** – the build
-    that reported this never reached the link step at all (it failed at
-    compile time on the GUID issue above first), so whether `-lcomsuppw`
-    actually resolves this symbol is unknown until the next CI run. If
-    it still fails specifically on this symbol, the real fix is
-    rewriting the WMI query construction to avoid `_bstr_t` entirely
-    (e.g. via plain `SysAllocString()`), not another library name to
-    try.
+  - `_com_util::ConvertStringToBSTR` (used via `_bstr_t`/`bstr_t("...")`
+    in the file’s WMI queries) undefined: **confirmed** via CI
+    (`"cannot find -lcomsuppw: No such file or directory"`) that
+    Rtools45’s MinGW-w64 doesn’t ship it – settling the uncertainty
+    flagged in the previous entry. Also revealed something useful while
+    tracking down every usage site: most of the `bstr_t` occurrences
+    this file’s grep results turned up were inside a `/* ... */` dead
+    code block, never actually compiled – only two live call sites
+    needed fixing (`Initialize()`’s WMI namespace connection,
+    `MappingUsbstorToDeviceNumber()`’s disk-drive query), and both were
+    static string literals with no dynamic narrow-to-wide conversion
+    involved. Rewrote both to use plain
+    `SysAllocString()`/`SysFreeString()` instead of `_bstr_t`, removed
+    `-lcomsuppw` from `Makevars.win` (nothing needs it now, and leaving
+    an unresolvable `-l` flag in `PKG_LIBS` fails the link regardless of
+    whether anything actually uses it).
 
 ### Vendored code patches
 
