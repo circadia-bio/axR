@@ -1,4 +1,4 @@
-# ⛏️ axR
+# ⛏️ axR <img src="man/figures/logo.svg" align="right" height="140"/>
 
 **Device discovery, status, settings, and data download for Axivity AX3/AX6 accelerometer devices.**
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
@@ -9,8 +9,6 @@
 [![pkgdown](https://img.shields.io/badge/docs-axr.circadia--lab.uk-FC544A)](https://axr.circadia-lab.uk)
 
 ---
-
-<img src="man/figures/logo.svg" align="right" height="160" alt="axR logo" />
 
 ## 📖 What is axR?
 
