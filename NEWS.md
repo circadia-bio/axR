@@ -238,6 +238,13 @@
   - Untested against real hardware on Linux -- these are correctness
     fixes for what `R CMD check` flagged, not a claim that Linux
     device discovery has been verified working end-to-end.
+  - `omapi-internal.c`'s `OmMillisecondsEpoch()` and this file's own
+    `timestamp()` both used the deprecated `ftime()` (glibc: "Use
+    gettimeofday or clock_gettime instead"), flagged as a "significant
+    warning" during install on the Linux CI runner (which fails the
+    whole check, since it treats any `WARNING` as a failure). Both
+    switched to `clock_gettime(CLOCK_REALTIME, ...)`, same millisecond
+    value, no extra linking needed on any glibc from the last decade-plus.
 
 ### Vendored code patches (Windows) -- unverified, iterating via CI
 

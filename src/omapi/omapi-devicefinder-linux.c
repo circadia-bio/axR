@@ -290,9 +290,13 @@ static void InitDeviceFinder()
 
 static unsigned int timestamp()
 {
-    struct timeb timer;
-    ftime(&timer);
-    return (unsigned int)(timer.time * 1000 + timer.millitm);
+    // axR patch: ftime() is deprecated (glibc: "Use gettimeofday or
+    // clock_gettime instead") -- flagged by R CMD check as a
+    // "significant warning" at install time. clock_gettime() gives the
+    // same millisecond timer value ftime() did.
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    return (unsigned int)((unsigned long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
 }
 
 // HACK: Wait until a serial device path is actually readable (with timeout)

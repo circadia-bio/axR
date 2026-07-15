@@ -238,9 +238,13 @@ OmLog(0, "DEBUG: callback for OM_DEVICE_REMOVED...\n");
 /** Internal method to obtain the number of milliseconds since the epoch. */
 unsigned long long OmMillisecondsEpoch(void)
 {
-    struct timeb tp;
-    ftime(&tp);
-    return (unsigned long long)tp.time * 1000 + tp.millitm;
+    // axR patch: ftime() is deprecated (glibc: "Use gettimeofday or
+    // clock_gettime instead") -- flagged by R CMD check as a
+    // "significant warning" at install time. clock_gettime() gives the
+    // same millisecond-since-epoch value ftime() did.
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    return (unsigned long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
 
