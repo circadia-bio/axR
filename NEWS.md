@@ -60,6 +60,13 @@
   container needed). Catches WASM/webR build failures (like the
   `-ludev` one above) directly in this repo's own CI, rather than only
   discovering them after r-universe attempts its own wasm build.
+* `R-CMD-check.yaml`'s matrix rebuilt to mirror r-universe's actual
+  per-package build matrix (devel: Linux+Windows; release: Linux,
+  Windows, macOS arm64+x86_64; oldrel-1: Windows+macOS) rather than
+  the generic r-lib/actions `check-standard` template, which doesn't
+  match r-universe's coverage 1:1. macOS release now runs on both
+  `macos-latest` (arm64) and `macos-13` (x86_64/Intel) to cover both
+  architectures r-universe builds separately.
 
 ### 📚 Documentation
 
