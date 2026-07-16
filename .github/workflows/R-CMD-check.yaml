@@ -47,3 +47,24 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+  # Catches build failures specific to the WebAssembly/webR target (e.g.
+  # r-universe's wasm build) directly in this repo's CI, rather than only
+  # discovering them after r-universe attempts its own build. Uses
+  # r-wasm/actions' build-rwasm action, which handles the Emscripten
+  # toolchain setup itself -- no special container/runner needed.
+  # https://github.com/r-wasm/actions
+  wasm-build:
+    runs-on: ubuntu-latest
+    name: WASM build (webR)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure configure/cleanup are executable
+        run: chmod +x configure cleanup
+
+      - name: Build Wasm R package
+        uses: r-wasm/actions/build-rwasm@v3
+        with:
+          packages: "."

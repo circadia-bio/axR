@@ -25,6 +25,14 @@
     `axivity_discover()` just always reports zero devices, gracefully,
     rather than failing to build at all.
 
+### 🚀 CI
+
+* New `wasm-build` job in `.github/workflows/R-CMD-check.yaml`, using
+  `r-wasm/actions/build-rwasm@v3` (self-contained, no special
+  container needed). Catches WASM/webR build failures (like the
+  `-ludev` one above) directly in this repo's own CI, rather than only
+  discovering them after r-universe attempts its own wasm build.
+
 ## axR 0.1.0  (2026-07)
 
 ### ✨ New features
