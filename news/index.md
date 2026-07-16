@@ -1,7 +1,5 @@
 # Changelog
 
-## axR (development version)
-
 ## axR 0.1.2 (2026-07)
 
 ### 🚀 CI
