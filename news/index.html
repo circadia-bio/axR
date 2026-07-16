@@ -144,10 +144,17 @@
 <code>ConnectServer(...)</code>’s 5th argument (<code>lSecurityFlags</code>, a <code>LONG</code>) and <code>PostMessage(...)</code>’s 3rd/4th arguments (<code>WPARAM</code>/<code>LPARAM</code>, also integer types) were passed <code>NULL</code> – harmless (<code>NULL</code> expands to 0), but flagged as passing NULL to a non-pointer argument. Changed to <code>0</code> to match the actual parameter types.</li>
 <li>Five <code>!= NULL</code> checks on <code>root</code>/<code>desiredVolumePath</code>, both fixed-size stack arrays whose address can never be NULL – always true, flagged as such. Dropped, keeping the meaningful “is this actually populated” half of each check.</li>
 </ul></li>
+<li>r-universe’s own Windows check also flagged “object files in source package” (<code>src/omapi/*.o</code>, <code>RcppExports.o</code>, <code>axR-omapi.o</code>, <code>axR.so</code>) on a <em>fresh</em> CI checkout – not just a stale local build. Two false starts before the real fix: <code>git rm --cached</code> found these paths weren’t actually tracked in git at all (ruling out an accidental early commit), and explicitly re-marking <code>configure</code>/<code>cleanup</code> executable via <code>git update-index --chmod=+x</code> found the bit was already correct. The real fix doesn’t depend on figuring out exactly why <code>cleanup</code> wasn’t purging these by packaging time: added <code>\.o$</code>/<code>\.so$</code>/<code>\.dll$</code> to <code>.Rbuildignore</code>, which <code>R CMD build</code> applies unconditionally when assembling the tarball, regardless of whatever’s sitting in the working directory at build time – more robust than relying on a cleanup script’s timing relative to the build steps.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="rocket-ci-0-1-1">🚀 CI<a class="anchor" aria-label="anchor" href="#rocket-ci-0-1-1"></a></h3>
 <ul><li>New <code>wasm-build</code> job in <code>.github/workflows/R-CMD-check.yaml</code>, using <code>r-wasm/actions/build-rwasm@v3</code> (self-contained, no special container needed). Catches WASM/webR build failures (like the <code>-ludev</code> one above) directly in this repo’s own CI, rather than only discovering them after r-universe attempts its own wasm build.</li>
+<li>
+<code>R-CMD-check.yaml</code>’s matrix rebuilt to mirror r-universe’s actual per-package build matrix (devel: Linux+Windows; release: Linux, Windows, macOS arm64+x86_64; oldrel-1: Windows+macOS) rather than the generic r-lib/actions <code>check-standard</code> template, which doesn’t match r-universe’s coverage 1:1. macOS release now runs on both <code>macos-latest</code> (arm64) and <code>macos-13</code> (x86_64/Intel) to cover both architectures r-universe builds separately.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="books-documentation-0-1-1">📚 Documentation<a class="anchor" aria-label="anchor" href="#books-documentation-0-1-1"></a></h3>
+<ul><li>Added a Zenodo DOI (<code>10.5281/zenodo.21393893</code>): DOI badge and a <code>📄 Citation</code> section in <code>README.md</code>, plus <code>CITATION.cff</code>, matching zeitR/mrpheus’s pattern.</li>
 </ul></div>
 </div>
     <div class="section level2">

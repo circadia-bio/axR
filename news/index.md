@@ -42,6 +42,19 @@
     stack arrays whose address can never be NULL – always true, flagged
     as such. Dropped, keeping the meaningful “is this actually
     populated” half of each check.
+- r-universe’s own Windows check also flagged “object files in source
+  package” (`src/omapi/*.o`, `RcppExports.o`, `axR-omapi.o`, `axR.so`)
+  on a *fresh* CI checkout – not just a stale local build. Two false
+  starts before the real fix: `git rm --cached` found these paths
+  weren’t actually tracked in git at all (ruling out an accidental early
+  commit), and explicitly re-marking `configure`/`cleanup` executable
+  via `git update-index --chmod=+x` found the bit was already correct.
+  The real fix doesn’t depend on figuring out exactly why `cleanup`
+  wasn’t purging these by packaging time: added `\.o$`/`\.so$`/`\.dll$`
+  to `.Rbuildignore`, which `R CMD build` applies unconditionally when
+  assembling the tarball, regardless of whatever’s sitting in the
+  working directory at build time – more robust than relying on a
+  cleanup script’s timing relative to the build steps.
 
 ### 🚀 CI
 
@@ -50,6 +63,19 @@
   needed). Catches WASM/webR build failures (like the `-ludev` one
   above) directly in this repo’s own CI, rather than only discovering
   them after r-universe attempts its own wasm build.
+- `R-CMD-check.yaml`’s matrix rebuilt to mirror r-universe’s actual
+  per-package build matrix (devel: Linux+Windows; release: Linux,
+  Windows, macOS arm64+x86_64; oldrel-1: Windows+macOS) rather than the
+  generic r-lib/actions `check-standard` template, which doesn’t match
+  r-universe’s coverage 1:1. macOS release now runs on both
+  `macos-latest` (arm64) and `macos-13` (x86_64/Intel) to cover both
+  architectures r-universe builds separately.
+
+### 📚 Documentation
+
+- Added a Zenodo DOI (`10.5281/zenodo.21393893`): DOI badge and a
+  `📄 Citation` section in `README.md`, plus `CITATION.cff`, matching
+  zeitR/mrpheus’s pattern.
 
 ## axR 0.1.0 (2026-07)
 
