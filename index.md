@@ -3,14 +3,14 @@
 **Device discovery, status, settings, and data download for Axivity
 AX3/AX6 accelerometer devices.**
 
+[![r-universe](https://circadia-bio.r-universe.dev/badges/axR)](https://circadia-bio.r-universe.dev/axR)
 [![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow)](https://axr.circadia-lab.uk/LICENSE)
-[![R](https://img.shields.io/badge/R-%3E%3D4.1.0-276DC3)](https://www.r-project.org/)
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange)](https://lifecycle.r-lib.org/articles/stages.html)
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://axr.circadia-lab.uk/LICENSE)
+[![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![R CMD
 CHECK](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml)
 [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/axR/gh-pages/badges/coverage.json)](https://github.com/circadia-bio/axR/actions/workflows/pkgdown.yaml)
+[![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/axR)
 [![pkgdown](https://img.shields.io/badge/docs-axr.circadia--lab.uk-FC544A)](https://axr.circadia-lab.uk)
 
 ------------------------------------------------------------------------
@@ -31,13 +31,32 @@ includes maintained, platform-specific device discovery
 (IOKit/DiskArbitration on macOS, SetupAPI on Windows, udev on Linux)
 rather than a hand-rolled equivalent.
 
-`axR` is deliberately a “dumb pipe” — it doesn’t know anything about
-`.cwa` file structure. Parsing recorded data is left to downstream
+`axR` is deliberately mostly a “dumb pipe” — it talks to the device and
+moves bytes, leaving higher-level actigraphy analysis to downstream
 packages such as [mrpheus](https://github.com/circadia-bio/mrpheus) or
 [zeitR](https://github.com/circadia-bio/zeitR).
+[`axivity_read_cwa()`](#id_-features) is a deliberate exception: OMAPI
+already ships a complete `.cwa` reader, so axR wraps that directly
+rather than building a second, differently-sourced parser.
 
-> **Status:** implemented against OMAPI but not yet tested against a
-> physical AX3/AX6 device.
+------------------------------------------------------------------------
+
+> \[!WARNING\] **axR has not been fully verified against real
+> hardware.** Live-device testing (macOS, real AX3) found and fixed four
+> separate crashes in the vendored library’s device-removal handling –
+> see `NEWS.md` for detail. `timestamp`/`x`/`y`/`z`/`device_id` from
+> [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+> have been verified correct against a real recording; `temperature_c`
+> has not, and is likely wrong on at least some hardware revisions.
+> [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
+> is not currently finding a real AX3 on at least one tested machine,
+> despite the device enumerating correctly at the OS level –
+> [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)/[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+> work independently of this. Windows and Linux device discovery compile
+> clean but are untested against real hardware on either platform. Not
+> tested against an AX6.
+
+------------------------------------------------------------------------
 
 ## ✨ Features
 
@@ -56,32 +75,59 @@ packages such as [mrpheus](https://github.com/circadia-bio/mrpheus) or
   [`axivity_download()`](https://axr.circadia-lab.uk/reference/axivity_download.md),
   backed by OMAPI’s own background download thread (progress polling and
   cancellation included), not a plain file copy
+- 📂
+  **[`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)**
+  — fallback: plain file copy from a mounted device volume, bypassing
+  OMAPI/`device_id` entirely, for when
+  [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
+  isn’t finding the device but its mass-storage mount still works
+- 🧮
+  **[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)**
+  — parse a `.cwa`/AX6 file directly (via OMAPI’s own binary reader)
+  into a tibble ready for downstream actigraphy analysis — no live
+  device or prior discovery required
+- 🐞
+  **[`axivity_enable_debug_log()`](https://axr.circadia-lab.uk/reference/axivity_enable_debug_log.md)**
+  — re-enable OMAPI’s internal diagnostic trace, for debugging
+  device-detection issues
 
 There’s no
 `axivity_open()`/[`close()`](https://rdrr.io/r/base/connections.html)
 step — the OMAPI session starts when axR is loaded and stops when it’s
-unloaded. Every function takes a `device_id` from
+unloaded. Every device-facing function takes a `device_id` from
 [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md).
 
 ## 🗂️ Project Structure
 
     axR/
     ├── configure              # generates src/Makevars at install time (chmod +x!)
+    ├── cleanup                # removes configure/build artefacts (chmod +x!)
     ├── R/
     │   ├── axR-package.R   # package-level documentation
     │   ├── zzz.R            # .onLoad/.onUnload (OmStartup/OmShutdown), .om_check()
-    │   ├── discover.R        # axivity_discover()
+    │   ├── discover.R        # axivity_discover(), axivity_enable_debug_log()
     │   ├── status.R          # battery, self-test, memory health, accelerometer,
     │   │                       # RTC, LED, lock, ECC, send_command
     │   ├── settings.R        # delays, session ID, metadata, accel config, reset
-    │   └── download.R        # data info, download, download_status/wait/cancel
+    │   ├── download.R        # data info, download, download_status/wait/cancel,
+    │   │                       # axivity_copy_data()
+    │   └── read_cwa.R        # axivity_read_cwa()
     ├── src/
     │   ├── axR-omapi.cpp     # thin Rcpp wrapper around OMAPI
-    │   ├── omapi/             # vendored OMAPI C library (BSD 2-clause)
+    │   ├── omapi/             # vendored OMAPI C library (BSD 2-clause), with
+    │   │                       # axR patches -- see inline comments and NEWS.md
     │   ├── Makevars.in       # template; configure fills in the platform-specific bits
     │   └── Makevars.win      # Windows build config (static, no template needed)
+    ├── vignettes/
+    │   ├── axR.Rmd.orig      # real vignette source (not shipped)
+    │   └── axR.Rmd           # pre-computed output, knitr::knit()'d from .orig
     ├── tests/testthat/
-    ├── man/figures/logo.svg
+    ├── man/figures/
+    │   ├── logo.svg
+    │   └── logo.png
+    ├── pkgdown/favicon/      # via pkgdown::build_favicons()
+    ├── .github/workflows/    # R-CMD-check.yaml, pkgdown.yaml
+    ├── _pkgdown.yml
     ├── DESCRIPTION
     └── NEWS.md
 
@@ -96,11 +142,28 @@ unloaded. Every function takes a `device_id` from
 
 ### Installation
 
+Install from [r-universe](https://circadia-bio.r-universe.dev)
+(recommended — pre-built binaries):
+
 ``` r
 
-# not yet on r-universe — install from source:
-remotes::install_github("circadia-bio/axR")
+install.packages(
+  "axR",
+  repos = c("https://circadia-bio.r-universe.dev", "https://cloud.r-project.org")
+)
 ```
+
+Or install the development version from GitHub:
+
+``` r
+
+install.packages("pak")
+pak::pak("circadia-bio/axR")
+```
+
+**Linux only:** r-universe’s pre-built binaries don’t bundle system
+libraries — `libudev-dev` (or equivalent) still needs to be installed
+separately on the machine running R, regardless of install method.
 
 ### Vignette
 
@@ -116,9 +179,13 @@ fallback, and reading `.cwa` files with
 
 ## 📦 Dependencies
 
-| Package | Version   | Purpose                                   |
-|---------|-----------|-------------------------------------------|
-| Rcpp    | \>= 1.0.0 | Bridges R to the vendored OMAPI C library |
+| Package | Type | Purpose |
+|----|----|----|
+| Rcpp | Imports | Bridges R to the vendored OMAPI C library |
+| tibble | Suggests | [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)’s return type (falls back to a plain data frame if absent) |
+| testthat | Suggests | Test suite |
+| covr | Suggests | Coverage reporting |
+| knitr, rmarkdown, pkgdown | Suggests | Vignette and documentation site |
 
 ## 👥 Authors
 

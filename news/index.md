@@ -1,39 +1,26 @@
 # Changelog
 
-## axR 0.0.0.9000
+## axR 0.1.0 (2026-07)
 
-- Initial scaffold: `DESCRIPTION`, `NAMESPACE`, Rcpp/C++ src layout.
+### ✨ New features
 
-### Architecture change: wraps OMAPI rather than reimplementing the serial protocol
-
-- Retired the hand-rolled `termios.h`/`kernel32` serial implementation
-  (moved to `attic/serial.cpp` – not part of the build).
-- Vendored the Open Movement Project’s OMAPI C library into `src/omapi`
-  (BSD 2-clause, Newcastle University; see `src/omapi/LICENSE.TXT`).
-  OMAPI is the same library behind Axivity’s own OmGui, with maintained
-  platform-specific device discovery (IOKit/DiskArbitration on macOS,
-  SetupAPI on Windows, udev on Linux).
-- `src/axR-omapi.cpp`: thin Rcpp wrapper – translates between R types
-  and OMAPI’s `int deviceId` / out-parameter / negative-error-code
-  convention. No device logic reimplemented here.
-- `.onLoad()`/`.onUnload()` (`R/zzz.R`) call
-  `OmStartup()`/`OmShutdown()`; there’s no separate
+- Initial release. Talks to Axivity AX3/AX6 accelerometer devices:
+  discovery, status, settings, data download, and reading recorded
+  `.cwa`/AX6 binary files – by wrapping the Open Movement Project’s
+  OMAPI C library (vendored in `src/omapi`, BSD 2-clause, Newcastle
+  University), rather than reimplementing the serial protocol or binary
+  file format directly. OMAPI is the same library behind Axivity’s own
+  OmGui software.
+- [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
+  – backed by `OmGetDeviceIds()` plus per-device status calls, returning
+  `device_id`, `serial`, `port`, `path`, `firmware_version`,
+  `hardware_version`, `battery_level`. Every other device-facing
+  function takes a `device_id` from this table – there’s no
   `axivity_open()`/[`close()`](https://rdrr.io/r/base/connections.html)
-  step.
-- `SystemRequirements` in `DESCRIPTION`: Linux needs `libudev-dev` (or
-  equivalent) for device discovery. macOS/Windows use OS frameworks/APIs
-  with no separate install step.
-
-### Discovery
-
-- [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md):
-  now backed by `OmGetDeviceIds()` plus per-device status calls,
-  returning `device_id`, `serial`, `port`, `path`, `firmware_version`,
-  `hardware_version`, `battery_level`.
-
-### Status
-
-- [`axivity_get_battery()`](https://axr.circadia-lab.uk/reference/axivity_get_battery.md),
+  step; the OMAPI session starts when axR is loaded (`OmStartup()` in
+  `.onLoad()`) and stops when it’s unloaded.
+- Status:
+  [`axivity_get_battery()`](https://axr.circadia-lab.uk/reference/axivity_get_battery.md),
   [`axivity_self_test()`](https://axr.circadia-lab.uk/reference/axivity_self_test.md),
   [`axivity_get_memory_health()`](https://axr.circadia-lab.uk/reference/axivity_get_memory_health.md),
   [`axivity_get_accelerometer()`](https://axr.circadia-lab.uk/reference/axivity_get_accelerometer.md),
@@ -44,348 +31,228 @@
   [`axivity_get_ecc()`](https://axr.circadia-lab.uk/reference/axivity_get_ecc.md)/
   `set_ecc()`, and
   [`axivity_send_command()`](https://axr.circadia-lab.uk/reference/axivity_send_command.md)
-  (now backed by `OmCommand()` instead of raw serial).
-
-### Settings
-
-- [`axivity_get_delays()`](https://axr.circadia-lab.uk/reference/axivity_get_delays.md)/`set_delays()`
+  as a raw escape hatch (`OmCommand()`).
+- Settings:
+  [`axivity_get_delays()`](https://axr.circadia-lab.uk/reference/axivity_get_delays.md)/`set_delays()`
   (`-Inf`/`Inf` as R-side sentinels for OMAPI’s zero/infinite
   `OM_DATETIME` values),
-  [`axivity_get_session_id()`](https://axr.circadia-lab.uk/reference/axivity_get_session_id.md)/
-  `set_session_id()`,
+  [`axivity_get_session_id()`](https://axr.circadia-lab.uk/reference/axivity_get_session_id.md)/`set_session_id()`,
   [`axivity_get_metadata()`](https://axr.circadia-lab.uk/reference/axivity_get_metadata.md)/`set_metadata()`,
-  [`axivity_get_accel_config()`](https://axr.circadia-lab.uk/reference/axivity_get_accel_config.md)/`set_accel_config()`.
-- [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md):
-  **breaking change** from the previous `full`/`commit` logical
-  arguments – now takes
-  `level = c("none","delete","quickformat","wipe")`, matching OMAPI’s
-  `OM_ERASE_LEVEL` enum directly.
-
-### Data download
-
-- [`axivity_download()`](https://axr.circadia-lab.uk/reference/axivity_download.md):
-  **breaking change** from the previous plain
-  [`file.copy()`](https://rdrr.io/r/base/files.html) version – now wraps
-  `OmBeginDownloading()`, OMAPI’s own background-thread download, with
-  [`axivity_download_status()`](https://axr.circadia-lab.uk/reference/axivity_download_status.md)/`_wait()`/
-  `_cancel()` for polling and cancellation. `blocking = TRUE` (default)
-  waits for completion; `blocking = FALSE` returns immediately.
-- [`axivity_get_data_info()`](https://axr.circadia-lab.uk/reference/axivity_get_data_info.md):
-  file size, filename, block layout, and recorded time range, from
-  `OmGetDataFileSize()`/`OmGetDataFilename()`/ `OmGetDataRange()`.
-- `axivity_copy_data(device_path, dest_dir, ...)`: a fallback that
-  bypasses OMAPI/`device_id` entirely and copies `.cwa` files straight
-  off a mounted volume path – for use while
-  [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
-  isn’t finding the device via OMAPI’s IOKit-level discovery, but the
-  mass-storage side still mounts fine regardless (as it did during
-  testing – see “Known gaps” below). Same plain-file-copy logic the
-  original pre-OMAPI
+  [`axivity_get_accel_config()`](https://axr.circadia-lab.uk/reference/axivity_get_accel_config.md)/`set_accel_config()`,
+  and `axivity_reset(level = c("none","delete","quickformat","wipe"))`
+  matching OMAPI’s `OM_ERASE_LEVEL` enum directly.
+- Data download:
+  [`axivity_get_data_info()`](https://axr.circadia-lab.uk/reference/axivity_get_data_info.md)
+  (size, filename, block layout, recorded time range),
   [`axivity_download()`](https://axr.circadia-lab.uk/reference/axivity_download.md)
-  had, just under a name that doesn’t collide with the current
-  OMAPI-backed one.
+  wrapping `OmBeginDownloading()` (OMAPI’s own background-thread
+  download) with
+  [`axivity_download_status()`](https://axr.circadia-lab.uk/reference/axivity_download_status.md)/`_wait()`/`_cancel()`
+  for polling and cancellation.
+- `axivity_copy_data(device_path, dest_dir, ...)` – a fallback that
+  bypasses OMAPI/`device_id` entirely and copies `.cwa` files straight
+  off a mounted volume path. For use while
+  [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
+  isn’t finding the device via OMAPI’s discovery, but the mass-storage
+  side still mounts fine regardless (see Known limitations).
+- `axivity_read_cwa(path)` – parses a `.cwa`/AX6 file directly via
+  OMAPI’s own binary reader (`omapi-reader.c`, already vendored), rather
+  than leaving all parsing to zeitR or building a second,
+  differently-sourced parser. A deliberate exception to axR’s “dumb
+  pipe” scope – see
+  [`?axivity_read_cwa`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md).
+  Whole block-reading loop runs in C++, not R (a multi-day 100Hz
+  recording is millions of samples). Returns a tibble (plain data frame
+  if `tibble` isn’t installed): one row per sample, `timestamp`
+  (`POSIXct`, sub-second precision), `x`/`y`/`z` (accelerometer, in g),
+  `gx`/`gy`/`gz` and `mx`/`my`/`mz` (gyro/magnetometer, only if present
+  – e.g. AX6 GA/GAM mode),
+  `light`/`temperature_c`/`battery_pct`/`sample_rate` at block
+  granularity. `device_id`/`session_id`/`metadata` attached as
+  attributes. Doesn’t require a live device or prior discovery – works
+  on any `.cwa`/AX6 file already on disk, including one still sitting on
+  a mounted device volume.
+- `axivity_enable_debug_log(file = NULL)` – re-enables OMAPI’s internal
+  `OmLog()` diagnostic trace (stderr by default, or a file, since raw
+  stderr writes from OMAPI’s background discovery pthread don’t always
+  reach the R console depending on frontend). Debug *level* is
+  separately controlled by the `OMDEBUG` environment variable, read once
+  at `OmStartup()` time – i.e. before
+  [`library(axR)`](https://axr.circadia-lab.uk), in a fresh session.
 
-### Reading .cwa files – `axivity_read_cwa()`
+### 🐛 Bug fixes – vendored OMAPI, found via real-device and CI testing
 
-- **Scope change from “dumb pipe”:** axR now wraps OMAPI’s own binary
-  file reader (`omapi-reader.c`, vendored, already compiled in) rather
-  than leaving all `.cwa`/AX6 parsing to zeitR. Chosen deliberately over
-  the alternative (a parity-first port of Julia’s Python Condor pipeline
-  into zeitR) since OMAPI already ships a complete, working reader –
-  wrapping it directly avoids a second, differently-sourced parsing
-  implementation. axR still doesn’t do any higher-level actigraphy
-  analysis on the result (sleep detection, non-wear detection, etc.) –
-  that’s still zeitR’s job downstream.
-- `axivity_read_cwa(path)`: whole block-reading loop runs in C++, not R
-  (a multi-day 100Hz recording is millions of samples; looping
-  [`.Call()`](https://rdrr.io/r/base/CallExternal.html)s per-block from
-  R would be a real performance problem). Returns a tibble (plain data
-  frame if `tibble` isn’t installed) with one row per sample:
-  `timestamp` (`POSIXct`, sub-second precision via OMAPI’s fractional
-  timestamp), `x`/`y`/`z` (accelerometer, in g), `gx`/`gy`/`gz` and
-  `mx`/`my`/`mz` (gyro/magnetometer, only present if the recording has
-  them – e.g. AX6 in GA/GAM mode), plus
-  `light`/`temperature_c`/`battery_pct`/`sample_rate` replicated at
-  block granularity (these are per-block readings, not per-sample).
-  `device_id`, `session_id`, and `metadata` attached as attributes.
-  Doesn’t require \[axivity_discover()\] to have found anything – works
-  on any `.cwa`/AX6 file already on disk.
-- Added `tibble` to `Suggests`.
-- **Known issue, unverified/likely wrong:** `temperature_c` came back as
-  `-28.3` on a real AX3 (hardware rev 1.7) recording, which isn’t a
-  plausible reading. The vendored conversion in `omapi-reader.c`
-  (`OM_VALUE_TEMPERATURE_MC`) hardcodes a formula for one specific
-  temperature sensor chip (MCP9700), with a comment right next to it
-  noting an alternate formula for a different chip (MCP9701) –
-  suggesting the conversion is hardware/sensor-revision-specific and may
-  not match every AX3 build. x/y/z, timestamps, and device_id all
-  independently verified correct against the same file; `temperature_c`
-  has not been verified and should not be trusted until checked against
-  OmGui’s own reading for the same recording (or Axivity’s hardware
-  documentation for which sensor chip this hardware revision uses).
+Four separate crashes were found and fixed via live-device testing on
+macOS (26.2, real AX3), plus a further round from R-CMD-check actually
+compiling the Linux and Windows device finders for the first time
+(previously only ever built/tested on macOS):
 
-### Design decisions
+- **macOS, `DeviceNotification()` (device removal callback):**
+  - `CFRelease(deviceData->deviceName)` crashed with
+    `*** CFRelease() called with NULL ***` (`EXC_BREAKPOINT`) on unplug.
+    Older CoreFoundation treated `CFRelease(NULL)` as a silent no-op;
+    recent macOS hardens it into a hard abort – a decade-old latent bug
+    in the vendored code, newly fatal rather than newly introduced.
+    Fixed with a NULL guard.
+  - `Release()` through `deviceData->deviceInterface` crashed with
+    `SIGSEGV` even with `deviceInterface` itself non-NULL – the vtable
+    it pointed to was no longer valid by the time this fires (the
+    physical device is already gone). Stopped calling it.
+  - A double-free (`free(deviceData)` twice,
+    `SIGABRT`/`___BUG_IN_CLIENT_OF_LIBMALLOC_...`) consistent with IOKit
+    delivering more than one removal notification for a single physical
+    unplug on current macOS. Fixed with an idempotency guard
+    (`DeviceData.removed`) – but the *first* attempt at this guard was
+    itself flawed (it stored the flag inside the same memory the
+    function also `free()`d, so a duplicate call’s guard check was a
+    use-after-free that could still let the double-free through). Fixed
+    properly by no longer freeing `deviceData` in this handler at all –
+    a bounded, negligible per-removal-event leak in exchange for the
+    guard actually being reliable.
+  - Also removed a custom `SIGINT` handler that called `exit(0)`
+    directly, plus several `fprintf(stderr, ...)` calls duplicating
+    adjacent `OmLog()` calls. A vendored library installing a
+    process-wide signal handler that terminates the process is actively
+    unsafe embedded in a host application (R) with its own interrupt
+    handling.
+  - `kIOMasterPortDefault` -\> `kIOMainPortDefault` (macOS 12+
+    deprecation warning; pure rename, no behaviour change).
+- **Linux, `omapi-devicefinder-linux.c`:** never compiled until
+  R-CMD-check’s Linux runner did it for the first time.
+  - Three `exit(1)` calls on `udev_new()` failure would each terminate
+    the whole R process. Replaced with early returns; callers already
+    handle the failure gracefully.
+  - This file never used `OmLog()` at all, only raw `printf()`/
+    `fprintf(stderr, ...)`, including one *unconditional* debug
+    `printf()` inside the background udev monitoring loop that would
+    spam stdout on every event. Converted to `OmLog()` (matching the
+    macOS finder’s convention) so Linux keeps the same diagnostic
+    capability via
+    [`axivity_enable_debug_log()`](https://axr.circadia-lab.uk/reference/axivity_enable_debug_log.md).
+  - Untested against real Linux hardware – these are correctness fixes
+    for what `R CMD check` flagged, not a claim discovery works
+    end-to-end there.
+- **Windows, `omapi-devicefinder-win.cpp`:** never compiled until
+  R-CMD-check’s Windows runner (Rtools45/MinGW-w64) did it for the first
+  time. Three rounds of genuine linker/compiler-driven iteration, since
+  neither of us has a Windows machine to verify against directly:
+  - `GUID_DEVINTERFACE_DISK`/`GUID_DEVINTERFACE_VOLUME` undefined at
+    link time. First attempt (`#define INITGUID`) made things *worse* –
+    caused `winioctl.h` to be processed twice (once directly, once
+    transitively via `windows.h`) with `INITGUID` active both times,
+    producing `"redefinition of const GUID ..."` errors for ~20 GUIDs.
+    Reverted; fixed instead with `-luuid` in `Makevars.win`, the
+    standard MinGW-w64 fix for this exact symptom.
+  - `VariantClear`/`SysFreeString` (`-loleaut32`) and
+    `CLSID_WbemLocator`/`IID_IWbemLocator` (`-lwbemuuid`) undefined:
+    both added to `PKG_LIBS`.
+  - `_com_util::ConvertStringToBSTR` (via `_bstr_t`/`bstr_t("...")` in
+    two WMI queries) undefined – confirmed via
+    `"cannot find -lcomsuppw: No such file or directory"` that
+    Rtools45’s MinGW-w64 doesn’t ship the MSVC-specific library backing
+    it. Both live call sites (most other `bstr_t` matches were inside a
+    `/* ... */` dead-code block, never compiled) rewritten to use plain
+    `SysAllocString()`/`SysFreeString()` instead.
+- Deprecated `ftime()` (glibc: “Use gettimeofday or clock_gettime
+  instead”) in `omapi-internal.c` and `omapi-devicefinder-linux.c`,
+  flagged as a significant install-time warning on the Linux CI runner.
+  Switched to `clock_gettime(CLOCK_REALTIME, ...)`.
+- [`sprintf()`](https://rdrr.io/r/base/sprintf.html) -\> `snprintf()`
+  throughout `omapi-status.c`, `omapi-settings.c`, and
+  `omapi-devicefinder-mac.c` (bounded, no behaviour change).
+  `OmStartup()`’s default log stream changed from `stderr` to `NULL`
+  (opt-in only, via `OmSetLogStream()`/
+  [`axivity_enable_debug_log()`](https://axr.circadia-lab.uk/reference/axivity_enable_debug_log.md)).
 
-- No C-level callbacks
-  (`OmSetDownloadCallback()`/`OmSetDeviceCallback()`) – they fire from
-  OMAPI’s own background thread, and calling back into R from a non-R
-  thread isn’t safe. Polling
-  ([`axivity_download_status()`](https://axr.circadia-lab.uk/reference/axivity_download_status.md),
-  `OmWaitForDownload()` via
-  [`axivity_download_wait()`](https://axr.circadia-lab.uk/reference/axivity_download_status.md))
-  is used instead.
+All vendored-code divergences from upstream libomapi are flagged inline
+with `// axR patch` comments, for anyone re-vendoring later.
 
-### Tests
+### 🚀 CI & pkgdown site
 
-- `.om_check()` behaviour (list and scalar status, pass-through
-  vs. error).
-- [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
-  shape check with no device connected.
-- [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md)/[`axivity_set_led()`](https://axr.circadia-lab.uk/reference/axivity_set_led.md)
-  argument validation
-  ([`match.arg()`](https://rdrr.io/r/base/match.arg.html) failures),
-  which don’t require hardware.
-- Prior serial-I/O and file-copy tests moved to `attic/` (they tested
-  the now-retired API).
+- `.github/workflows/R-CMD-check.yaml`: ubuntu/macOS/windows matrix,
+  matching zeitR/mrpheus, plus two axR-specific steps: installing
+  `libudev-dev` on Linux (not auto-detected from a prose
+  `SystemRequirements` field) and `chmod +x configure cleanup` (POSIX
+  only).
+- `.github/workflows/pkgdown.yaml`: build/coverage-badge/deploy-to-
+  `gh-pages` structure matching zeitR/mrpheus (via
+  `JamesIves/github-pages-deploy-action`), same extra steps as above.
+- `_pkgdown.yml`: Bootstrap 5 + bslib theming matching zeitR/mrpheus’s
+  structure, using axR’s own hex-sticker palette (navy `#014370`, coral
+  `#FC544A`, peach `#FFA75D`, cream `#FFECD4`).
+- `configure`/`cleanup` (POSIX shell scripts, need `chmod +x`):
+  `src/Makevars` is generated from `src/Makevars.in` at install time
+  rather than committed statically, moving the Darwin/Linux conditional
+  out of Make syntax (`ifeq`, `$(shell)`, `:=`) into shell – fixes an
+  `R CMD check` “GNU extensions in Makefiles” warning. `cleanup` removes
+  generated/compiled artefacts before a fresh check.
+- `man/figures/logo.png` (rasterized via `rsvg-convert`) and
+  `pkgdown/favicon/` (via
+  [`pkgdown::build_favicons()`](https://pkgdown.r-lib.org/reference/build_favicons.html))
+  added.
+- README: R CMD CHECK / coverage / pkgdown-site badges; logo moved
+  inline with the H1 (a standalone `<img>` lower in the file rendered
+  huge and unconstrained on the pkgdown home page).
+- Netlify deployment (watching `gh-pages`, `axr.circadia-lab.uk`) is a
+  manual step outside this repo.
 
-### Documentation
+### 📚 Documentation
 
-- Added a vignette (`vignettes/axR.Rmd`,
-  [`vignette("axR")`](https://axr.circadia-lab.uk/articles/axR.md))
-  walking through discovery, status/settings, downloading,
+- [`vignette("axR")`](https://axr.circadia-lab.uk/articles/axR.md) –
+  discovery, status/settings, downloading,
   [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md),
-  and
   [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md).
-  `VignetteBuilder: knitr` added to `DESCRIPTION`.
-- **Pre-computed vignette pattern:** `vignettes/axR.Rmd.orig` is the
-  real source (excluded from the built package via `.Rbuildignore`);
-  `vignettes/axR.Rmd` is generated from it via
-  `knitr::knit("vignettes/axR.Rmd.orig", "vignettes/axR.Rmd")`, run
-  locally, and the *result* of that (with real output baked in) is
-  what’s committed and shipped. This means r-universe/CRAN builds never
-  need to execute any axR code to build the vignette – it’s already
-  static by the time it’s built there.
-  - Only the
-    [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
-    section currently has `eval = TRUE` in the `.orig` source, since
-    that’s the only part of axR verified working against real hardware
-    right now. Discovery/status/settings/ download chunks stay
-    `eval = FALSE` (illustrative only) until discovery is fixed and
-    those can be genuinely re-run and re-baked.
-  - Re-run the
-    [`knitr::knit()`](https://rdrr.io/pkg/knitr/man/knit.html) step and
-    re-commit `axR.Rmd` whenever the verified-working parts of the
-    package change, or discovery starts working and more sections can be
-    flipped to `eval = TRUE`.
+- Uses the pre-computed vignette pattern: `vignettes/axR.Rmd.orig` is
+  the real source (excluded from the built package); `vignettes/axR.Rmd`
+  is generated from it via
+  [`knitr::knit()`](https://rdrr.io/pkg/knitr/man/knit.html), run
+  locally, with real output baked in – so r-universe/CRAN never need to
+  execute axR code to build it. Only the
+  [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+  section has `eval = TRUE` so far, since it’s the only part verified
+  against real hardware; re-run and re-bake as more of the package gets
+  verified.
 
-### pkgdown site & CI
+### 🧪 Tests
 
-- `_pkgdown.yml`: same structure as zeitR/mrpheus (Bootstrap 5 + bslib
-  theming, OpenGraph meta, navbar/footer layout), using axR’s own hex
-  sticker palette (navy `#014370`, coral `#FC544A`, peach `#FFA75D`,
-  cream `#FFECD4`). Reference index grouped by discovery/status/
-  settings/download/reading/diagnostics.
-- `.github/workflows/R-CMD-check.yaml`: same ubuntu/macOS/windows matrix
-  as zeitR/mrpheus, plus two axR-specific steps the reference workflow
-  doesn’t need: installing `libudev-dev` on the Linux runner (not
-  something `setup-r-dependencies` auto-detects from a prose
-  `SystemRequirements` field), and `chmod +x configure cleanup` before
-  checking (POSIX only – Windows uses the static `Makevars.win`).
-- `.github/workflows/pkgdown.yaml`: same build-site / coverage-badge /
-  deploy-to-`gh-pages` structure as zeitR/mrpheus (via
-  `JamesIves/github-pages-deploy-action`), with the same `libudev-dev`/
-  `chmod +x` steps added for the same reason as the check workflow.
-  **Deviates from the reference workflow in one place:** only copies
-  `logo.png` to `docs/`, not `card.png` – axR doesn’t have a `card.png`
-  (the wider social-preview composite, distinct from the hex logo
-  itself) yet. Add that `cp` line back once one exists.
-- `man/figures/logo.png` (1080x1241, rasterized from `logo.svg` via
-  `rsvg-convert`) and `pkgdown/favicon/` (via
-  [`pkgdown::build_favicons()`](https://pkgdown.r-lib.org/reference/build_favicons.html),
-  hitting realfavicongenerator.net’s API) added – needed by the pkgdown
-  workflow’s OpenGraph image copy and favicon `<link>` tags
-  respectively; didn’t exist before this.
-- `DESCRIPTION`: added `covr`/`pkgdown` to `Suggests`; `URL` now lists
-  the pkgdown site alongside the GitHub repo, matching zeitR/mrpheus’s
-  convention.
-- `README.md`: added R CMD CHECK, coverage, and pkgdown-site badges,
-  matching zeitR/mrpheus.
-- Netlify deployment (watching `gh-pages`, domain `axr.circadia-lab.uk`)
-  is a manual step outside this repo – not something a commit here can
-  configure.
+- `.om_check()` behaviour (list and scalar status, pass-through vs.
+  error);
+  [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
+  shape check with no device connected;
+  [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md)/[`axivity_set_led()`](https://axr.circadia-lab.uk/reference/axivity_set_led.md)
+  argument validation
+  ([`match.arg()`](https://rdrr.io/r/base/match.arg.html) failures) –
+  none require hardware.
 
-### Known gaps
+### 👥 Authors
+
+- Mario Leocadio-Miguel added as an author.
+
+### ⚠️ Known limitations
 
 - [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
-  is not yet finding a real AX3 device (macOS 26.2), despite `ioreg`
-  confirming the device enumerates correctly at the IOKit level with the
-  expected VID/PID (`0x04D8`/`0x0057`) and serial (`CWA17_46171`). Root
-  cause not yet identified – waiting on input from an Axivity/OMAPI
-  contact. The device’s USB mass-storage volume mounts fine independent
-  of this, which is what
-  [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)
-  (above) works around in the meantime.
+  is not yet finding a real AX3 device on at least one tested machine
+  (macOS 26.2), despite `ioreg` confirming the device enumerates
+  correctly at the IOKit level with the expected VID/PID
+  (`0x04D8`/`0x0057`) and serial. Root cause not yet identified –
+  waiting on input from an Axivity/OMAPI contact.
+  [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)/[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+  work independently of this in the meantime, since the device’s
+  mass-storage mount isn’t affected.
+- [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)’s
+  `temperature_c` is unverified and likely wrong on at least some
+  hardware revisions – the vendored conversion formula is specific to
+  one temperature sensor chip, with a different formula noted for
+  another chip right beside it in the source. `timestamp`, `x`/`y`/`z`,
+  and `device_id` have been verified correct against a real AX3
+  recording.
+- Windows and Linux device discovery compile clean but are untested
+  against real hardware on either platform.
+- Windows discovery uses a fixed `COM1`-`COM40` probe range rather than
+  true device enumeration.
+- Not tested against an AX6, only a real AX3.
 - [`axivity_get_metadata()`](https://axr.circadia-lab.uk/reference/axivity_get_metadata.md)’s
   padding-trim regex hasn’t been checked against a real device’s
   returned buffer.
-
-### Authors
-
-- Added Mario Leocadio-Miguel as an author (`DESCRIPTION`,
-  `_pkgdown.yml`, `README.md`, `LICENSE`, `LICENSE.md`).
-
-### Vendored code patches (Linux)
-
-- `omapi-devicefinder-linux.c` had never been compiled until the
-  R-CMD-check GitHub Actions Linux runner did it for the first time –
-  everything up to this point was only ever tested on macOS. Same class
-  of issues as the Mac finder, none previously caught:
-  - Three `exit(1)` calls on `udev_new()` failure (`GetSerialDevice()`,
-    `InitDeviceFinder()`, and the background
-    `OmDeviceDiscoveryThread()`) would each terminate the whole R
-    process. Replaced with early returns (`return;` / `return NULL;`
-    matching each function’s signature) – the callers already handle the
-    failure gracefully (e.g. checking `strlen(serial_device) > 0`).
-  - This file never used `OmLog()` at all, only raw `printf()`/
-    `fprintf(stderr, ...)`, including one *unconditional* debug
-    `printf("DEVICE-ACTION: ...")` inside the background monitoring loop
-    that would have spammed stdout on every udev event. All converted to
-    `OmLog()` calls (matching the Mac finder’s convention) rather than
-    just deleted, so Linux keeps the same diagnostic capability via
-    [`axivity_enable_debug_log()`](https://axr.circadia-lab.uk/reference/axivity_enable_debug_log.md).
-  - Untested against real hardware on Linux – these are correctness
-    fixes for what `R CMD check` flagged, not a claim that Linux device
-    discovery has been verified working end-to-end.
-  - `omapi-internal.c`’s `OmMillisecondsEpoch()` and this file’s own
-    [`timestamp()`](https://rdrr.io/r/utils/savehistory.html) both used
-    the deprecated `ftime()` (glibc: “Use gettimeofday or clock_gettime
-    instead”), flagged as a “significant warning” during install on the
-    Linux CI runner (which fails the whole check, since it treats any
-    `WARNING` as a failure). Both switched to
-    `clock_gettime(CLOCK_REALTIME, ...)`, same millisecond value, no
-    extra linking needed on any glibc from the last decade-plus.
-
-### Vendored code patches (Windows) – unverified, iterating via CI
-
-- `omapi-devicefinder-win.cpp` failed to *link* on the R-CMD-check
-  GitHub Actions Windows runner (Rtools45/MinGW-w64) – first time this
-  file had ever actually been built; unlike the macOS/Linux fixes above,
-  neither of us has a Windows machine to verify against, so this is a
-  best-effort fix pending the next CI run, not a confirmed one.
-  - `GUID_DEVINTERFACE_DISK`/`GUID_DEVINTERFACE_VOLUME` undefined at
-    link time: **first attempt was `#define INITGUID` before
-    `<windows.h>` – this made things worse, not better.** It caused
-    `winioctl.h` (included both directly and transitively through
-    `windows.h`’s own chain) to be processed twice with `INITGUID`
-    active both times, and its GUID definitions weren’t guarded against
-    that second pass the way its normal header-include-guard block is –
-    `"redefinition of const GUID ..."` compile errors for ~20 GUIDs, not
-    just the two originally missing. **Reverted.** Switched to `-luuid`
-    in `Makevars.win` instead – the standard MinGW-w64 fix for
-    “undefined reference to GUID_XXX”, and doesn’t touch header
-    inclusion at all.
-  - `VariantClear`/`SysFreeString` (`oleaut32`) and
-    `CLSID_WbemLocator`/`IID_IWbemLocator` (`wbemuuid`, needed for this
-    file’s WMI serial-port queries) undefined: added both libs to
-    `Makevars.win`’s `PKG_LIBS`. Confident these exist under any
-    MinGW-w64 Windows SDK port.
-  - `_com_util::ConvertStringToBSTR` (used via `_bstr_t`/`bstr_t("...")`
-    in the file’s WMI queries) undefined: **confirmed** via CI
-    (`"cannot find -lcomsuppw: No such file or directory"`) that
-    Rtools45’s MinGW-w64 doesn’t ship it – settling the uncertainty
-    flagged in the previous entry. Also revealed something useful while
-    tracking down every usage site: most of the `bstr_t` occurrences
-    this file’s grep results turned up were inside a `/* ... */` dead
-    code block, never actually compiled – only two live call sites
-    needed fixing (`Initialize()`’s WMI namespace connection,
-    `MappingUsbstorToDeviceNumber()`’s disk-drive query), and both were
-    static string literals with no dynamic narrow-to-wide conversion
-    involved. Rewrote both to use plain
-    `SysAllocString()`/`SysFreeString()` instead of `_bstr_t`, removed
-    `-lcomsuppw` from `Makevars.win` (nothing needs it now, and leaving
-    an unresolvable `-l` flag in `PKG_LIBS` fails the link regardless of
-    whether anything actually uses it).
-
-### Vendored code patches
-
-- `src/omapi/omapi-devicefinder-mac.c`: `kIOMasterPortDefault` -\>
-  `kIOMainPortDefault` (2 occurrences), silencing a macOS 12+
-  deprecation warning from `R CMD check`. Purely a rename –
-  `kIOMasterPortDefault` remains functional, this isn’t a behaviour
-  change. Flagged inline with `// axR patch` comments; re-apply if this
-  file is ever re-vendored from upstream libomapi.
-- [`sprintf()`](https://rdrr.io/r/base/sprintf.html) -\> `snprintf()`
-  throughout `omapi-status.c`, `omapi-settings.c`, and
-  `omapi-devicefinder-mac.c` (all into already-fixed-size buffers – adds
-  a bound, doesn’t change behaviour). Fixes an `R CMD check` “compiled
-  code” warning about calling unbounded `[v]sprintf`.
-- `omapi-main.c`: `OmStartup()`’s default log stream changed from
-  `stderr` to `NULL` (no logging unless the caller opts in via
-  `OmSetLogStream()`/`OmSetLogCallback()`). `OmLog()` already guards on
-  `om.log != NULL` before writing, so this is safe – compiled code
-  writing directly to stderr instead of through R’s console is exactly
-  what the check warns about, and at the default debug level nothing was
-  being logged either way.
-- `omapi-devicefinder-mac.c`: removed a custom `SIGINT` handler
-  (`SignalHandler()`) that called `exit(0)` directly, plus its
-  registration via `signal()`. A vendored library installing a
-  process-wide signal handler that terminates the process is actively
-  unsafe when embedded in a host application (R) that has its own
-  interrupt handling – this is a real robustness fix, not just a lint
-  fix. Also removed several `fprintf(stderr, ...)` calls that duplicated
-  an adjacent `OmLog()` call (which already supports configurable log
-  streams/callbacks).
-- `omapi-devicefinder-mac.c`, `DeviceNotification()`: guard
-  `CFRelease(deviceData->deviceName)` against NULL. This was crashing R
-  (`rsession`) on device *removal* with
-  `*** CFRelease() called with NULL ***` / `EXC_BREAKPOINT` on current
-  macOS – older CoreFoundation treated `CFRelease(NULL)` as a silent
-  no-op; recent macOS hardens it into a hard abort. A decade-old latent
-  bug in the vendored code, newly fatal rather than newly introduced.
-  Found via a real device test (macOS 26.2, AX3) – see the crash
-  report’s stack trace (`DeviceNotification` at
-  `omapi-devicefinder-mac.c:386`) for the original diagnosis.
-- `omapi-devicefinder-mac.c`, `DeviceNotification()`: also stopped
-  calling `Release()` through `deviceData->deviceInterface` on removal –
-  this crashed with `SIGSEGV`/`EXC_BAD_ACCESS` even with
-  `deviceInterface` itself non-NULL, i.e. the vtable it pointed to was
-  no longer valid by the time this fires (the physical device is already
-  gone – `kIOMessageServiceIsTerminated`). Unlike the `CFRelease(NULL)`
-  fix above, this one is inferred from the crash rather than confirmed
-  against documented macOS behaviour – flagged as provisional pending
-  further real-device testing.
-- `omapi-devicefinder-mac.c`: added an idempotency guard
-  (`DeviceData.removed`) to `DeviceNotification()`, after a third crash
-  appeared on device removal – a double-free (`free(deviceData)` twice,
-  `___BUG_IN_CLIENT_OF_LIBMALLOC_POINTER_BEING_FREED_WAS_NOT_ALLOCATED`,
-  `SIGABRT`), consistent with IOKit delivering more than one
-  `kIOMessageServiceIsTerminated` for a single physical unplug on
-  current macOS. **First attempt at this guard was itself flawed**: it
-  stored the `removed` flag inside `deviceData`, but the same function
-  also `free()`d `deviceData` – so a duplicate call’s guard check was
-  reading already-freed memory, which is undefined behaviour and could
-  (and did) still let the double-free through. Fixed by no longer
-  calling `free(deviceData)` in this handler at all: the guard can only
-  be reliable if the memory it checks stays valid, so a bounded,
-  negligible leak (one small struct per physical removal event, for the
-  life of the R session) is accepted in exchange for the guard actually
-  working. Four real crashes found and fixed via one afternoon of
-  live-device testing (macOS 26.2, AX3).
-- Build system: `src/Makevars` is no longer committed as a static file.
-  `configure` (a POSIX shell script) now generates it from
-  `src/Makevars.in` at install time, picking the right device-finder
-  object and libraries for the platform. This moves the Darwin-vs-Linux
-  conditional out of Make syntax (`ifeq`, `$(shell)`, `:=`) into shell
-  syntax, fixing an `R CMD check` “GNU extensions in Makefiles” warning.
-  `configure` must be executable (`chmod +x configure`) – git doesn’t
-  reliably preserve this bit across all clone/checkout paths, so
-  double-check after cloning. `src/Makevars.win` is untouched (it never
-  had the conditional logic).
-- `cleanup` (also a POSIX shell script, also needs `chmod +x`): removes
-  `configure`-generated `src/Makevars` and any leftover
-  `.o`/`.so`/`.dll` build artefacts (including nested ones in
-  `src/omapi/`, which
-  [`pkgbuild::clean_dll()`](https://pkgbuild.r-lib.org/reference/clean_dll.html)
-  doesn’t reach). Run this before `R CMD check` if you’ve built locally
-  beforehand – the standard companion to a `configure` script per
-  ‘Configure and cleanup’ in the R Extensions manual.
+- No `card.png` (pkgdown social-preview card) yet – only the hex sticker
+  logo itself.
