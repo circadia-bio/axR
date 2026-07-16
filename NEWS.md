@@ -38,6 +38,20 @@
     fixed-size stack arrays whose address can never be NULL -- always
     true, flagged as such. Dropped, keeping the meaningful
     "is this actually populated" half of each check.
+* r-universe's own Windows check also flagged "object files in source
+  package" (`src/omapi/*.o`, `RcppExports.o`, `axR-omapi.o`, `axR.so`)
+  on a *fresh* CI checkout -- not just a stale local build. Two false
+  starts before the real fix: `git rm --cached` found these paths
+  weren't actually tracked in git at all (ruling out an accidental
+  early commit), and explicitly re-marking `configure`/`cleanup`
+  executable via `git update-index --chmod=+x` found the bit was
+  already correct. The real fix doesn't depend on figuring out
+  exactly why `cleanup` wasn't purging these by packaging time: added
+  `\.o$`/`\.so$`/`\.dll$` to `.Rbuildignore`, which `R CMD build`
+  applies unconditionally when assembling the tarball, regardless of
+  whatever's sitting in the working directory at build time -- more
+  robust than relying on a cleanup script's timing relative to the
+  build steps.
 
 ### 🚀 CI
 
