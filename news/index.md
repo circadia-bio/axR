@@ -1,5 +1,42 @@
 # Changelog
 
+## axR (development version)
+
+### 🐛 Bug fixes
+
+- r-universe’s WebAssembly/webR build failed:
+  `wasm-ld: error: unable to find library -ludev`. `configure`’s
+  Darwin/Linux detection (`uname -s`) can’t distinguish this target – it
+  reports the *host* OS (“Linux”) even when cross-compiling to
+  `wasm32-unknown-emscripten` via `emconfigure`, so it picked the Linux
+  branch requiring `libudev`, which doesn’t exist in a WASM sandbox at
+  all (there’s no OS device layer to speak of in a browser context, and
+  raw USB/serial access isn’t available to a WASM module regardless).
+  Not a missing library to chase down – device discovery genuinely
+  doesn’t apply to this target.
+  - `configure` now detects an Emscripten cross-compile by checking the
+    `--host` argument it’s actually invoked with (confirmed via the real
+    build log: `--host=wasm32-unknown-emscripten`) and `$CC`, since
+    `uname -s` alone can’t tell.
+  - New `omapi-devicefinder-wasm.c`: genuine no-op stub implementing
+    just the two functions OMAPI’s platform-independent code calls
+    (`OmDeviceDiscoveryStart()`/`OmDeviceDiscoveryStop()`), so the
+    package still compiles for webR/browser use.
+    [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)/[`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)
+    and everything else not dependent on a live device still work under
+    this target;
+    [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
+    just always reports zero devices, gracefully, rather than failing to
+    build at all.
+
+### 🚀 CI
+
+- New `wasm-build` job in `.github/workflows/R-CMD-check.yaml`, using
+  `r-wasm/actions/build-rwasm@v3` (self-contained, no special container
+  needed). Catches WASM/webR build failures (like the `-ludev` one
+  above) directly in this repo’s own CI, rather than only discovering
+  them after r-universe attempts its own wasm build.
+
 ## axR 0.1.0 (2026-07)
 
 ### ✨ New features

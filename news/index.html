@@ -127,9 +127,24 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/circadia-bio/axR/blob/v0.1.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/circadia-bio/axR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="axr-development-version">axR (development version)<a class="anchor" aria-label="anchor" href="#axr-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-bug-fixes-development-version">🐛 Bug fixes<a class="anchor" aria-label="anchor" href="#bug-bug-fixes-development-version"></a></h3>
+<ul><li>r-universe’s WebAssembly/webR build failed: <code>wasm-ld: error: unable to find library -ludev</code>. <code>configure</code>’s Darwin/Linux detection (<code>uname -s</code>) can’t distinguish this target – it reports the <em>host</em> OS (“Linux”) even when cross-compiling to <code>wasm32-unknown-emscripten</code> via <code>emconfigure</code>, so it picked the Linux branch requiring <code>libudev</code>, which doesn’t exist in a WASM sandbox at all (there’s no OS device layer to speak of in a browser context, and raw USB/serial access isn’t available to a WASM module regardless). Not a missing library to chase down – device discovery genuinely doesn’t apply to this target.
+<ul><li>
+<code>configure</code> now detects an Emscripten cross-compile by checking the <code>--host</code> argument it’s actually invoked with (confirmed via the real build log: <code>--host=wasm32-unknown-emscripten</code>) and <code>$CC</code>, since <code>uname -s</code> alone can’t tell.</li>
+<li>New <code>omapi-devicefinder-wasm.c</code>: genuine no-op stub implementing just the two functions OMAPI’s platform-independent code calls (<code>OmDeviceDiscoveryStart()</code>/<code>OmDeviceDiscoveryStop()</code>), so the package still compiles for webR/browser use. <code><a href="../reference/axivity_read_cwa.html">axivity_read_cwa()</a></code>/<code><a href="../reference/axivity_copy_data.html">axivity_copy_data()</a></code> and everything else not dependent on a live device still work under this target; <code><a href="../reference/axivity_discover.html">axivity_discover()</a></code> just always reports zero devices, gracefully, rather than failing to build at all.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="rocket-ci-development-version">🚀 CI<a class="anchor" aria-label="anchor" href="#rocket-ci-development-version"></a></h3>
+<ul><li>New <code>wasm-build</code> job in <code>.github/workflows/R-CMD-check.yaml</code>, using <code>r-wasm/actions/build-rwasm@v3</code> (self-contained, no special container needed). Catches WASM/webR build failures (like the <code>-ludev</code> one above) directly in this repo’s own CI, rather than only discovering them after r-universe attempts its own wasm build.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="axr-010-2026-07">axR 0.1.0 (2026-07)<a class="anchor" aria-label="anchor" href="#axr-010-2026-07"></a></h2>
 <div class="section level3">
