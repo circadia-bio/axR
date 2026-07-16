@@ -247,7 +247,10 @@ bool DeviceFinder::Initialize(void)
     // ("cannot find -lcomsuppw" at link time). SysAllocString() is plain
     // Win32 OLE Automation, no extra library needed.
     BSTR bstrNamespace = SysAllocString(L"ROOT\\CIMV2");
-    hr = ((IWbemLocator *)pLoc)->ConnectServer(bstrNamespace, NULL, NULL, 0, NULL, 0, 0, (IWbemServices **)&pSvc);
+    // axR patch: 5th arg (lSecurityFlags) is a LONG, not a BSTR -- NULL
+    // there is harmless (expands to 0) but flagged as passing NULL to a
+    // non-pointer argument. Use 0 to match the actual parameter type.
+    hr = ((IWbemLocator *)pLoc)->ConnectServer(bstrNamespace, NULL, NULL, 0, 0, 0, 0, (IWbemServices **)&pSvc);
     SysFreeString(bstrNamespace);
     if (FAILED(hr)) { Log(0, "ERROR: Could not connect to WMI ROOT\\CIMV2: 0x%08x\n", hr); ((IWbemLocator *)pLoc)->Release(); pLoc = NULL; CoUninitialize(); return false; }
 
@@ -1331,7 +1334,9 @@ void DeviceFinder::Stop(void)
     quitFlag = true;
     while (hWndDeviceFinder != NULL)
     {
-        PostMessage((HWND)hWndDeviceFinder, WM_CLOSE, NULL, NULL);
+        // axR patch: WPARAM/LPARAM are integer types, not pointers -- 0
+        // instead of NULL for the same reason as the ConnectServer fix above.
+        PostMessage((HWND)hWndDeviceFinder, WM_CLOSE, 0, 0);
         Log(4, "THREAD: Waiting for DeviceFinder to close...\n");
         if (WaitForSingleObject((HANDLE)thread, INFINITE) != WAIT_OBJECT_0) { ; }
     }
@@ -1563,8 +1568,11 @@ OmLog(1, "1a: Not attempting mount as device has an unknown volume path.\n");
         // Mount location
         sprintf(root, "C:\\Mount");
 
-        // Desired mount point
-        if (root != NULL && root[0] != '\0')
+        // axR patch: root/desiredVolumePath are fixed-size stack arrays --
+        // their address is never NULL, so that half of each check below is
+        // always true and flagged as such. Dropped, keeping the meaningful
+        // "is this actually populated" check.
+        if (root[0] != '\0')
         {
 			if (device.serialNumber <= 99999)	// backwards-compatibility
 			{
@@ -1605,7 +1613,7 @@ OmLog(1, "3: %s\n", desiredVolumePath);
         for (char *name = volumePathNames; name != NULL && name[0] != '\0'; name += strlen(name) + 1)
         {
             numMountPoints++;
-            if (desiredVolumePath != NULL && desiredVolumePath[0] != '\0' && stricmp(name, desiredVolumePath) == 0)
+            if (desiredVolumePath[0] != '\0' && stricmp(name, desiredVolumePath) == 0)
             {
                 hasDesiredMountPoint = 1;
             }
@@ -1625,7 +1633,7 @@ OmLog(1, "1a: Found non-initial point: %s\n", volumePath.c_str());
 OmLog(1, "4: Creating desired mount point...\n");
 #endif
             // Make root folder if it doesn't exist
-            if (root != NULL && root[0] != '\0')
+            if (root[0] != '\0')
             {
                 DWORD attribs = GetFileAttributesA(root);
                 if (attribs == INVALID_FILE_ATTRIBUTES || !(attribs & FILE_ATTRIBUTE_DIRECTORY))
@@ -1644,7 +1652,7 @@ OmLog(1, "5a: Failed to create mount point root...\n");
             }
 
             // Make mount folder if it doesn't exist
-            if (desiredVolumePath != NULL && desiredVolumePath[0] != '\0')
+            if (desiredVolumePath[0] != '\0')
             {
                 DWORD attribs = GetFileAttributesA(desiredVolumePath);
                 if (attribs == INVALID_FILE_ATTRIBUTES || !(attribs & FILE_ATTRIBUTE_DIRECTORY)) 
@@ -1663,7 +1671,7 @@ OmLog(1, "6a: Failed to create mount point...\n");
             }
 
             // Set the volume mount point
-            if (desiredVolumePath != NULL && desiredVolumePath[0] != '\0')
+            if (desiredVolumePath[0] != '\0')
             {
 #ifdef DEBUG_MOUNT
 OmLog(1, "7: Setting mount point... SetVolumeMountPointA(\"%s\", \"%s\");\n", desiredVolumePath, device.volumeName.c_str());

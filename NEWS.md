@@ -24,6 +24,20 @@
     dependent on a live device still work under this target;
     `axivity_discover()` just always reports zero devices, gracefully,
     rather than failing to build at all.
+* r-universe's own separate Windows check (first real signal since our
+  own CI's Windows job only confirmed the package *links*, not a full
+  `R CMD check`) flagged 8 compiler warnings in
+  `omapi-devicefinder-win.cpp` -- all cosmetic, the package installed
+  successfully regardless (`Status: 1 WARNING`, not an error).
+  - `ConnectServer(...)`'s 5th argument (`lSecurityFlags`, a `LONG`)
+    and `PostMessage(...)`'s 3rd/4th arguments (`WPARAM`/`LPARAM`,
+    also integer types) were passed `NULL` -- harmless (`NULL` expands
+    to 0), but flagged as passing NULL to a non-pointer argument.
+    Changed to `0` to match the actual parameter types.
+  - Five `!= NULL` checks on `root`/`desiredVolumePath`, both
+    fixed-size stack arrays whose address can never be NULL -- always
+    true, flagged as such. Dropped, keeping the meaningful
+    "is this actually populated" half of each check.
 
 ### 🚀 CI
 
