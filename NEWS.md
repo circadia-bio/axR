@@ -1,3 +1,30 @@
+## axR (development version)
+
+### 🐛 Bug fixes
+
+* r-universe's WebAssembly/webR build failed:
+  `wasm-ld: error: unable to find library -ludev`. `configure`'s
+  Darwin/Linux detection (`uname -s`) can't distinguish this target --
+  it reports the *host* OS ("Linux") even when cross-compiling to
+  `wasm32-unknown-emscripten` via `emconfigure`, so it picked the Linux
+  branch requiring `libudev`, which doesn't exist in a WASM sandbox at
+  all (there's no OS device layer to speak of in a browser context, and
+  raw USB/serial access isn't available to a WASM module regardless).
+  Not a missing library to chase down -- device discovery genuinely
+  doesn't apply to this target.
+  - `configure` now detects an Emscripten cross-compile by checking the
+    `--host` argument it's actually invoked with (confirmed via the
+    real build log: `--host=wasm32-unknown-emscripten`) and `$CC`,
+    since `uname -s` alone can't tell.
+  - New `omapi-devicefinder-wasm.c`: genuine no-op stub implementing
+    just the two functions OMAPI's platform-independent code calls
+    (`OmDeviceDiscoveryStart()`/`OmDeviceDiscoveryStop()`), so the
+    package still compiles for webR/browser use.
+    `axivity_read_cwa()`/`axivity_copy_data()` and everything else not
+    dependent on a live device still work under this target;
+    `axivity_discover()` just always reports zero devices, gracefully,
+    rather than failing to build at all.
+
 ## axR 0.1.0  (2026-07)
 
 ### ✨ New features

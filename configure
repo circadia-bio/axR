@@ -14,7 +14,35 @@
 
 UNAME_S=`uname -s`
 
-if [ "$UNAME_S" = "Darwin" ]; then
+# axR patch: detect a WebAssembly/Emscripten cross-compile (e.g.
+# r-universe's webR/wasm build target). `uname -s` alone can't tell us
+# this -- it reports the *host* OS (still "Linux" even when
+# cross-compiling to wasm32-unknown-emscripten via emconfigure), so check
+# the --host argument this script is actually invoked with instead
+# (confirmed via a real r-universe wasm build log:
+# "./configure.orig --build=x86_64-pc-linux-gnu --host=wasm32-unknown-emscripten").
+IS_WASM=no
+for arg in "$@"; do
+  case "$arg" in
+    --host=*emscripten*|--host=wasm*) IS_WASM=yes ;;
+  esac
+done
+case "$CC" in
+  *emcc*) IS_WASM=yes ;;
+esac
+
+if [ "$IS_WASM" = "yes" ]; then
+  # No udev/IOKit/SetupAPI equivalent exists inside a WASM sandbox, and
+  # raw USB/serial access isn't available to a WASM module regardless --
+  # this isn't a missing library to chase, device discovery genuinely
+  # doesn't apply to this target. Build with a no-op stub instead (see
+  # omapi-devicefinder-wasm.c) so the package still compiles for
+  # webR/browser use -- axivity_read_cwa()/axivity_copy_data() and
+  # everything else that doesn't need a live device still works there;
+  # axivity_discover() just always reports zero devices.
+  OMAPI_FINDER_OBJ="omapi/omapi-devicefinder-wasm.o"
+  OMAPI_LIBS="-lpthread"
+elif [ "$UNAME_S" = "Darwin" ]; then
   OMAPI_FINDER_OBJ="omapi/omapi-devicefinder-mac.o"
   OMAPI_LIBS="-lpthread -framework Cocoa -framework IOKit -framework DiskArbitration"
 else
