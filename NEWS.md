@@ -1,4 +1,4 @@
-## axR (development version)
+## axR 0.1.1  (2026-07)
 
 ### 🐛 Bug fixes
 

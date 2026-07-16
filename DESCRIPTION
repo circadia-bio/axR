@@ -1,6 +1,6 @@
 Package: axR
 Title: Serial Communication and Data Retrieval for Axivity Devices
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
