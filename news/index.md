@@ -1,5 +1,31 @@
 # Changelog
 
+## axR (development version)
+
+## axR 0.1.2 (2026-07)
+
+### 🚀 CI
+
+- Dropped the `macos-13` (Intel) job from `R-CMD-check.yaml`’s matrix –
+  GitHub is winding down hosted Intel Mac runners, and jobs targeting it
+  were staying queued indefinitely rather than actually running.
+  `macos-latest` (Apple Silicon/arm64) remains.
+
+### 🐛 Bug fixes
+
+- `SystemRequirements` was a full prose sentence rather than a bare,
+  machine-parseable value. r-universe’s own build pipeline (separate
+  from this repo’s GitHub Actions, which already installed `libudev-dev`
+  explicitly) reads this field directly to decide what to
+  `apt-get install` before building – a prose sentence very likely
+  wasn’t recognised, so no Linux binary was ever produced, and any
+  downstream package installing axR from r-universe fell back to a
+  source build that then failed on the same missing `libudev.h`
+  (surfaced when zeitR’s CI tried to install axR as a new `Suggests`
+  dependency for `read_axivity()`). Changed to a bare `libudev`; the
+  OS-specific explanation moved into `Description` instead, where it’s
+  just documentation, not something a tool needs to parse.
+
 ## axR 0.1.1 (2026-07)
 
 ### 🐛 Bug fixes

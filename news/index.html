@@ -99,7 +99,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">axR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -130,6 +130,21 @@
       <small>Source: <a href="https://github.com/circadia-bio/axR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="axr-development-version">axR (development version)<a class="anchor" aria-label="anchor" href="#axr-development-version"></a></h2>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2" id="axr-012-2026-07">axR 0.1.2 (2026-07)<a class="anchor" aria-label="anchor" href="#axr-012-2026-07"></a></h2>
+<div class="section level3">
+<h3 id="rocket-ci-0-1-2">🚀 CI<a class="anchor" aria-label="anchor" href="#rocket-ci-0-1-2"></a></h3>
+<ul><li>Dropped the <code>macos-13</code> (Intel) job from <code>R-CMD-check.yaml</code>’s matrix – GitHub is winding down hosted Intel Mac runners, and jobs targeting it were staying queued indefinitely rather than actually running. <code>macos-latest</code> (Apple Silicon/arm64) remains.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-bug-fixes-0-1-2">🐛 Bug fixes<a class="anchor" aria-label="anchor" href="#bug-bug-fixes-0-1-2"></a></h3>
+<ul><li>
+<code>SystemRequirements</code> was a full prose sentence rather than a bare, machine-parseable value. r-universe’s own build pipeline (separate from this repo’s GitHub Actions, which already installed <code>libudev-dev</code> explicitly) reads this field directly to decide what to <code>apt-get install</code> before building – a prose sentence very likely wasn’t recognised, so no Linux binary was ever produced, and any downstream package installing axR from r-universe fell back to a source build that then failed on the same missing <code>libudev.h</code> (surfaced when zeitR’s CI tried to install axR as a new <code>Suggests</code> dependency for <code>read_axivity()</code>). Changed to a bare <code>libudev</code>; the OS-specific explanation moved into <code>Description</code> instead, where it’s just documentation, not something a tool needs to parse.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="axr-011-2026-07">axR 0.1.1 (2026-07)<a class="anchor" aria-label="anchor" href="#axr-011-2026-07"></a></h2>
 <div class="section level3">
