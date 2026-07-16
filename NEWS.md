@@ -47,6 +47,12 @@
   `-ludev` one above) directly in this repo's own CI, rather than only
   discovering them after r-universe attempts its own wasm build.
 
+### 📚 Documentation
+
+* Added a Zenodo DOI (`10.5281/zenodo.21393893`): DOI badge and a
+  `📄 Citation` section in `README.md`, plus `CITATION.cff`, matching
+  zeitR/mrpheus's pattern.
+
 ## axR 0.1.0  (2026-07)
 
 ### ✨ New features
