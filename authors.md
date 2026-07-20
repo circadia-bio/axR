@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/circadia-bio/axR/blob/v0.1.2/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/circadia-bio/axR/blob/main/DESCRIPTION)
 
 França L, Leocadio-Miguel M (2026). *axR: Serial Communication and Data
 Retrieval for Axivity Devices*. R package version 0.1.2,
