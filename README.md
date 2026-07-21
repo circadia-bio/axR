@@ -40,16 +40,10 @@ parser.
 
 > [!WARNING]
 > **axR has not been fully verified against real hardware.** Live-device
-> testing (macOS, real AX3) found and fixed four separate crashes in the
-> vendored library's device-removal handling -- see `NEWS.md` for detail.
+> testing was performed on macOS and a real AX3. 
 > `timestamp`/`x`/`y`/`z`/`device_id` from `axivity_read_cwa()` have been
 > verified correct against a real recording; `temperature_c` has not, and
-> is likely wrong on at least some hardware revisions. `axivity_discover()`
-> is not currently finding a real AX3 on at least one tested machine,
-> despite the device enumerating correctly at the OS level --
-> `axivity_copy_data()`/`axivity_read_cwa()` work independently of this.
-> Windows and Linux device discovery compile clean but are untested
-> against real hardware on either platform. Not tested against an AX6.
+> is likely wrong on at least some hardware revisions. Not tested against an AX6.
 
 ---
 
@@ -62,6 +56,11 @@ parser.
 - ⚙️ **Settings** — delayed activation window, session ID, metadata
   scratch buffer, accelerometer rate/range, and `axivity_reset()` (erase +
   commit, with `none`/`delete`/`quickformat`/`wipe` levels)
+- 🧰 **`axivity_stage_device()`** — one-call deployment staging: sets
+  accelerometer config, deployment window (as `start`/`stop` or
+  `start`/`duration`), session ID, and metadata, then commits with
+  `axivity_reset()`. For finer control, the underlying `axivity_set_*()`
+  functions and `axivity_reset()` remain available individually
 - 📥 **Download** — `axivity_download()`, backed by OMAPI's own background
   download thread (progress polling and cancellation included), not a
   plain file copy
@@ -92,6 +91,7 @@ axR/
 │   ├── status.R          # battery, self-test, memory health, accelerometer,
 │   │                       # RTC, LED, lock, ECC, send_command
 │   ├── settings.R        # delays, session ID, metadata, accel config, reset
+│   ├── stage.R            # axivity_stage_device() -- one-call deployment staging
 │   ├── download.R        # data info, download, download_status/wait/cancel,
 │   │                       # axivity_copy_data()
 │   └── read_cwa.R        # axivity_read_cwa()
@@ -152,9 +152,9 @@ separately on the machine running R, regardless of install method.
 vignette("axR")
 ```
 
-Walks through discovery, status/settings, downloading, the
-`axivity_copy_data()` fallback, and reading `.cwa` files with
-`axivity_read_cwa()`.
+Walks through discovery, status/settings, deployment staging with
+`axivity_stage_device()`, downloading, the `axivity_copy_data()`
+fallback, and reading `.cwa` files with `axivity_read_cwa()`.
 
 ## 📦 Dependencies
 

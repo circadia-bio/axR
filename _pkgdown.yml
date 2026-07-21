@@ -206,6 +206,11 @@ reference:
   - axivity_get_accel_config
   - axivity_reset
 
+- title: "Deployment staging"
+  desc: "One-call staging of settings for a participant deployment."
+  contents:
+  - axivity_stage_device
+
 - title: "Data download"
   desc: "Retrieve recorded data from a connected device, or a fallback for
     when device discovery isn't finding it."

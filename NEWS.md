@@ -1,3 +1,24 @@
+## axR (development version)
+
+### ✨ New features
+
+* `axivity_stage_device()` -- a single convenience function to configure
+  a device end-to-end for a participant deployment (accelerometer
+  rate/range, deployment window, session ID, metadata) and commit it
+  with `axivity_reset()`, rather than calling the four `axivity_set_*()`
+  functions plus `axivity_reset()` separately. The deployment window can
+  be given as explicit `start`/`stop` `POSIXct` values or as `start` +
+  `duration`. Deliberately does not allow `reset_level = "none"`, since
+  that would leave the staged settings only partially committed; users
+  who need that level of control can still call the individual
+  `axivity_set_*()` functions and `axivity_reset()` themselves.
+
+### 🧪 Tests
+
+* `axivity_stage_device()` rejecting `reset_level = "none"` before
+  touching a device -- the one branch of the function testable without
+  hardware, matching the rest of the suite.
+
 ## axR 0.1.2  (2026-07)
 
 ### 🚀 CI

@@ -111,6 +111,35 @@ detail on why.
 
 This erases the device. There's no undo.
 
+## Staging a device for a deployment
+
+The four `axivity_set_*()` calls above, plus `axivity_reset()` to commit
+them, is a common enough sequence for preparing a device for a
+participant that it's wrapped as `axivity_stage_device()`:
+
+```{r}
+axivity_stage_device(
+  id,
+  start      = Sys.time(),
+  duration   = as.difftime(7, units = "days"),
+  session_id = 2,
+  metadata   = "P001_baseline"
+)
+```
+
+The deployment window can be given as `start` + `duration` (as above) or
+as explicit `start`/`stop` `POSIXct` values -- `duration`, if supplied,
+overrides `stop`. `rate`/`range` default to `100`/`8` (100 Hz, +/-8g),
+matching `axivity_set_accel_config()`'s own defaults.
+
+`reset_level` defaults to `"quickformat"`, and deliberately can't be set
+to `"none"` -- that level only commits metadata, which would leave the
+staged settings only partially applied. If you need `"none"`'s narrower
+behaviour, or want to inspect/change settings individually rather than
+all at once, call `axivity_set_delays()`/`axivity_set_session_id()`/
+`axivity_set_metadata()`/`axivity_set_accel_config()` and
+`axivity_reset()` yourself, as shown earlier in this vignette.
+
 ## Downloading recorded data
 
 ```{r}
