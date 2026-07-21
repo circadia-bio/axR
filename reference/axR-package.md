@@ -1,23 +1,30 @@
-# axR: Device Communication and .cwa File Reading for Axivity Devices
+# axR: Interfacing and Retrieving Data from Accelerometer Devices
 
 Talks to Axivity AX3/AX6 accelerometer devices: discovery, status
 (battery, self-test, memory health, accelerometer, RTC, LED, lock, ECC),
 settings (delays, session ID, metadata, accelerometer config, erase),
 data download, and reading recorded `.cwa`/AX6 binary files
 ([`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)).
+Also reads Condor Instruments ActTrust `.txt` actigraphy exports
+([`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md))
+into the same tidy epoch shape, as a device-agnostic actigraphy import
+layer.
 
 ## Details
 
 axR was originally scoped as a "dumb pipe" – talk to the device, move
 bytes, leave file parsing to downstream packages.
 [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
-is a deliberate exception: OMAPI already ships a complete binary file
-reader (`omapi-reader.c`), and wrapping it directly is simpler and more
-consistent than reimplementing the same format a second time in zeitR
-from a different reference pipeline. axR does not do any higher-level
-actigraphy analysis on the parsed data (sleep detection, non-wear
-detection, etc.) – that's still zeitR's job, downstream of the tibble
-this returns.
+and
+[`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)
+are deliberate exceptions: OMAPI already ships a complete binary file
+reader (`omapi-reader.c`), and ActTrust's `.txt` export is a plain,
+well-specified text format – wrapping/parsing both directly is simpler
+and more consistent than reimplementing either format a second time in
+zeitR from a different reference pipeline. axR does not do any
+higher-level actigraphy analysis on the parsed data (sleep detection,
+non-wear detection, etc.) – that's still zeitR's job, downstream of the
+tibbles these functions return.
 
 ## Implementation
 
@@ -35,7 +42,8 @@ The OMAPI session is started when axR is loaded (`OmStartup()` in
 `axivity_open()`/[`close()`](https://rdrr.io/r/base/connections.html)
 step. Every device-facing function takes a `device_id`, obtained from
 [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md).
-[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md),
+[`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md),
 and
 [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)
 are the exceptions – they work on a file already on disk and don't need
@@ -63,3 +71,5 @@ Authors:
 
 - Mario Leocadio-Miguel <mario.miguel@northumbria.ac.uk>
   ([ORCID](https://orcid.org/0000-0002-7248-3529))
+
+- Daniel Jackson ([ORCID](https://orcid.org/0000-0002-6349-5026))

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>axR — Device communication and .cwa file reading for Axivity devices • axR</title>
+<title>axR — Interfacing and retrieving data from accelerometer devices • axR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -17,10 +17,10 @@
 <link href="deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="axR — Device communication and .cwa file reading for Axivity devices">
-<meta name="description" content="Talks to Axivity AX3/AX6 accelerometer devices: discovery, status, settings, data download, and reading recorded .cwa/AX6 binary files. Wraps the Open Movement Project's OMAPI C library rather than reimplementing the serial protocol or binary file format directly. Part of the Circadia Lab R ecosystem at Northumbria University.
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="axR — Interfacing and retrieving data from accelerometer devices">
+<meta name="description" content="Talks to Axivity AX3/AX6 accelerometer devices: discovery, status, settings, data download, and reading recorded .cwa/AX6 binary files. Also reads Condor Instruments ActTrust .txt actigraphy exports into the same tidy epoch shape. Wraps the Open Movement Project's OMAPI C library rather than reimplementing the serial protocol or binary file format directly. Part of the Circadia Lab R ecosystem at Northumbria University.
 ">
-<meta property="og:description" content="Talks to Axivity AX3/AX6 accelerometer devices: discovery, status, settings, data download, and reading recorded .cwa/AX6 binary files. Wraps the Open Movement Project's OMAPI C library rather than reimplementing the serial protocol or binary file format directly. Part of the Circadia Lab R ecosystem at Northumbria University.
+<meta property="og:description" content="Talks to Axivity AX3/AX6 accelerometer devices: discovery, status, settings, data download, and reading recorded .cwa/AX6 binary files. Also reads Condor Instruments ActTrust .txt actigraphy exports into the same tidy epoch shape. Wraps the Open Movement Project's OMAPI C library rather than reimplementing the serial protocol or binary file format directly. Part of the Circadia Lab R ecosystem at Northumbria University.
 ">
 <meta property="og:image" content="https://axr.circadia-lab.uk/logo.svg">
 <!-- Override pkgdown og:image with raster PNG for social sharing --><meta property="og:image" content="https://axr.circadia-lab.uk/logo.png">
@@ -172,18 +172,18 @@
 <img src="logo.svg" class="logo" alt=""><h1 id="pick-axr-">⛏️ axR <a class="anchor" aria-label="anchor" href="#pick-axr-"></a>
 </h1>
 </div>
-<p><strong>Device discovery, status, settings, and data download for Axivity AX3/AX6 accelerometer devices.</strong></p>
-<p><a href="https://circadia-bio.r-universe.dev/axR" class="external-link"><img src="https://circadia-bio.r-universe.dev/badges/axR" alt="r-universe"></a> <a href="https://doi.org/10.5281/zenodo.21393893" class="external-link"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21393893-blue" alt="DOI"></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://github.com/circadia-bio/axR/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/axR/gh-pages/badges/coverage.json" alt="Coverage"></a> <a href="https://github.com/circadia-bio/axR" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a> <a href="https://axr.circadia-lab.uk"><img src="https://img.shields.io/badge/docs-axr.circadia--lab.uk-FC544A" alt="pkgdown"></a></p>
+<p><strong>Device discovery, status, settings, and data download for accelerometer devices.</strong></p>
+<p><a href="https://circadia-bio.r-universe.dev/axR" class="external-link"><img src="https://circadia-bio.r-universe.dev/badges/axR" alt="r-universe"></a> <a href="https://doi.org/10.5281/zenodo.21393892" class="external-link"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21393892-blue" alt="DOI"></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://github.com/circadia-bio/axR/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/axR/gh-pages/badges/coverage.json" alt="Coverage"></a> <a href="https://github.com/circadia-bio/axR" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a> <a href="https://axr.circadia-lab.uk"><img src="https://img.shields.io/badge/docs-axr.circadia--lab.uk-FC544A" alt="pkgdown"></a></p>
 <hr>
 <div class="section level2">
 <h2 id="open_book-what-is-axr">📖 What is axR?<a class="anchor" aria-label="anchor" href="#open_book-what-is-axr"></a>
 </h2>
-<p><code>axR</code> talks to Axivity AX3/AX6 accelerometers over USB: discovering connected devices, querying and setting status/configuration, and downloading recorded <code>.cwa</code> files.</p>
+<p><code>axR</code> talks to Axivity AX3/AX6 accelerometers over USB: discovering connected devices, querying and setting status/configuration, and downloading recorded <code>.cwa</code> files. It also parses those <code>.cwa</code> files directly, and – as of a recent addition – Condor Instruments ActTrust <code>.txt</code> actigraphy exports, into the same tidy epoch shape.</p>
 <p>Rather than reimplementing the Axivity serial protocol directly, axR wraps the Open Movement Project’s <a href="https://github.com/openmovementproject/libomapi" class="external-link">OMAPI</a> C library (vendored in <code>src/omapi</code>, BSD 2-clause, Newcastle University — see <a href="src/omapi/LICENSE.TXT"><code>src/omapi/LICENSE.TXT</code></a>). OMAPI is the same library behind Axivity’s own OmGui software, and includes maintained, platform-specific device discovery (IOKit/DiskArbitration on macOS, SetupAPI on Windows, udev on Linux) rather than a hand-rolled equivalent.</p>
-<p><code>axR</code> is deliberately mostly a “dumb pipe” — it talks to the device and moves bytes, leaving higher-level actigraphy analysis to downstream packages such as <a href="https://github.com/circadia-bio/mrpheus" class="external-link">mrpheus</a> or <a href="https://github.com/circadia-bio/zeitR" class="external-link">zeitR</a>. <a href="#id_-features"><code>axivity_read_cwa()</code></a> is a deliberate exception: OMAPI already ships a complete <code>.cwa</code> reader, so axR wraps that directly rather than building a second, differently-sourced parser.</p>
+<p><code>axR</code> is deliberately mostly a “dumb pipe” — it talks to the device and moves bytes, leaving higher-level actigraphy analysis to downstream packages such as <a href="https://github.com/circadia-bio/mrpheus" class="external-link">mrpheus</a> or <a href="https://github.com/circadia-bio/zeitR" class="external-link">zeitR</a>. <a href="#id_-features"><code>axivity_read_cwa()</code></a> and <a href="#id_-features"><code>read_acttrust()</code></a> are deliberate exceptions: OMAPI already ships a complete <code>.cwa</code> reader, and ActTrust’s <code>.txt</code> export format is a plain, well-specified text format – so axR wraps/parses both directly rather than building a second, differently-sourced parser for either. <code><a href="reference/read_acttrust.html">read_acttrust()</a></code> deliberately stops at device-format parsing, though: it returns the file’s own epoch columns with no pipeline-specific columns or classes added, leaving that reshaping to downstream packages (e.g. zeitR), the same way <code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code> does.</p>
 <hr>
 <blockquote>
-<p>[!WARNING] <strong>axR has not been fully verified against real hardware.</strong> Live-device testing (macOS, real AX3) found and fixed four separate crashes in the vendored library’s device-removal handling – see <code>NEWS.md</code> for detail. <code>timestamp</code>/<code>x</code>/<code>y</code>/<code>z</code>/<code>device_id</code> from <code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code> have been verified correct against a real recording; <code>temperature_c</code> has not, and is likely wrong on at least some hardware revisions. <code><a href="reference/axivity_discover.html">axivity_discover()</a></code> is not currently finding a real AX3 on at least one tested machine, despite the device enumerating correctly at the OS level – <code><a href="reference/axivity_copy_data.html">axivity_copy_data()</a></code>/<code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code> work independently of this. Windows and Linux device discovery compile clean but are untested against real hardware on either platform. Not tested against an AX6.</p>
+<p>[!WARNING] <strong>axR has not been fully verified against real hardware.</strong> Live-device testing was performed on macOS and a real AX3. <code>timestamp</code>/<code>x</code>/<code>y</code>/<code>z</code>/<code>device_id</code> from <code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code> have been verified correct against a real recording; <code>temperature_c</code> has not, and is likely wrong on at least some hardware revisions. Not tested against an AX6.</p>
 </blockquote>
 <hr>
 </div>
@@ -195,9 +195,11 @@
 </li>
 <li>📊 <strong>Status</strong> — battery, self-test, memory health, live accelerometer reading, RTC get/set, LED colour, anti-tamper lock, ECC flag, and a raw <code><a href="reference/axivity_send_command.html">axivity_send_command()</a></code> escape hatch</li>
 <li>⚙️ <strong>Settings</strong> — delayed activation window, session ID, metadata scratch buffer, accelerometer rate/range, and <code><a href="reference/axivity_reset.html">axivity_reset()</a></code> (erase + commit, with <code>none</code>/<code>delete</code>/<code>quickformat</code>/<code>wipe</code> levels)</li>
+<li>🧰 <strong><code><a href="reference/axivity_stage_device.html">axivity_stage_device()</a></code></strong> — one-call deployment staging: sets accelerometer config, deployment window (as <code>start</code>/<code>stop</code> or <code>start</code>/<code>duration</code>), session ID, and metadata, then commits with <code><a href="reference/axivity_reset.html">axivity_reset()</a></code>. For finer control, the underlying <code>axivity_set_*()</code> functions and <code><a href="reference/axivity_reset.html">axivity_reset()</a></code> remain available individually</li>
 <li>📥 <strong>Download</strong> — <code><a href="reference/axivity_download.html">axivity_download()</a></code>, backed by OMAPI’s own background download thread (progress polling and cancellation included), not a plain file copy</li>
 <li>📂 <strong><code><a href="reference/axivity_copy_data.html">axivity_copy_data()</a></code></strong> — fallback: plain file copy from a mounted device volume, bypassing OMAPI/<code>device_id</code> entirely, for when <code><a href="reference/axivity_discover.html">axivity_discover()</a></code> isn’t finding the device but its mass-storage mount still works</li>
 <li>🧮 <strong><code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code></strong> — parse a <code>.cwa</code>/AX6 file directly (via OMAPI’s own binary reader) into a tibble ready for downstream actigraphy analysis — no live device or prior discovery required</li>
+<li>📋 <strong><code><a href="reference/read_acttrust.html">read_acttrust()</a></code></strong> — parse a Condor Instruments ActTrust <code>.txt</code> export into the same tidy epoch shape, as a device-agnostic actigraphy import layer alongside <code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code> – no live device required</li>
 <li>🐞 <strong><code><a href="reference/axivity_enable_debug_log.html">axivity_enable_debug_log()</a></code></strong> — re-enable OMAPI’s internal diagnostic trace, for debugging device-detection issues</li>
 </ul>
 <p>There’s no <code>axivity_open()</code>/<code><a href="https://rdrr.io/r/base/connections.html" class="external-link">close()</a></code> step — the OMAPI session starts when axR is loaded and stops when it’s unloaded. Every device-facing function takes a <code>device_id</code> from <code><a href="reference/axivity_discover.html">axivity_discover()</a></code>.</p>
@@ -215,9 +217,12 @@
 │   ├── status.R          # battery, self-test, memory health, accelerometer,
 │   │                       # RTC, LED, lock, ECC, send_command
 │   ├── settings.R        # delays, session ID, metadata, accel config, reset
+│   ├── stage.R            # axivity_stage_device() -- one-call deployment staging
 │   ├── download.R        # data info, download, download_status/wait/cancel,
 │   │                       # axivity_copy_data()
-│   └── read_cwa.R        # axivity_read_cwa()
+│   ├── read_cwa.R        # axivity_read_cwa()
+│   ├── read_acttrust.R   # read_acttrust()
+│   └── utils.R           # internal message helpers (axr_abort/warn/inform), %||%
 ├── src/
 │   ├── axR-omapi.cpp     # thin Rcpp wrapper around OMAPI
 │   ├── omapi/             # vendored OMAPI C library (BSD 2-clause), with
@@ -271,7 +276,7 @@
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"axR"</span><span class="op">)</span></span></code></pre></div>
-<p>Walks through discovery, status/settings, downloading, the <code><a href="reference/axivity_copy_data.html">axivity_copy_data()</a></code> fallback, and reading <code>.cwa</code> files with <code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code>.</p>
+<p>Walks through discovery, status/settings, deployment staging with <code><a href="reference/axivity_stage_device.html">axivity_stage_device()</a></code>, downloading, the <code><a href="reference/axivity_copy_data.html">axivity_copy_data()</a></code> fallback, and reading <code>.cwa</code> files with <code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -295,10 +300,22 @@
 <td>Bridges R to the vendored OMAPI C library</td>
 </tr>
 <tr>
+<td>cli</td>
+<td>Imports</td>
+<td>
+<code><a href="reference/read_acttrust.html">read_acttrust()</a></code>’s error/warning messages</td>
+</tr>
+<tr>
+<td>lubridate</td>
+<td>Imports</td>
+<td>
+<code><a href="reference/read_acttrust.html">read_acttrust()</a></code>’s flexible date-time parsing</td>
+</tr>
+<tr>
 <td>tibble</td>
 <td>Suggests</td>
 <td>
-<code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code>’s return type (falls back to a plain data frame if absent)</td>
+<code><a href="reference/axivity_read_cwa.html">axivity_read_cwa()</a></code>/<code><a href="reference/read_acttrust.html">read_acttrust()</a></code>’s return type (falls back to a plain data frame if absent)</td>
 </tr>
 <tr>
 <td>testthat</td>
@@ -343,6 +360,11 @@
 <td>Mario Leocadio-Miguel</td>
 <td>Circadia Lab, Northumbria University</td>
 </tr>
+<tr>
+<td>Author</td>
+<td>Daniel Jackson</td>
+<td>Northumbria University</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -351,11 +373,11 @@
 </h2>
 <p>If you use axR in your research, please cite it:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co">@software{franca_axr_2026,</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">  author  = {França, Lucas and Leocadio-Miguel, Mario},</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">  title   = {{axR}: Serial Communication and Data Retrieval for Axivity Devices},</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">  author  = {França, Lucas and Leocadio-Miguel, Mario and Jackson, Daniel},</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">  title   = {{axR}: Interfacing and Retrieving Data from Accelerometer Devices},</span></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">  year    = {2026},</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">  version = {0.1.1},</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">  doi     = {10.5281/zenodo.21393893},</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">  doi     = {10.5281/zenodo.21393892},</span></span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">  url     = {https://github.com/circadia-bio/axR}</span></span>
 <span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
 </div>
@@ -373,7 +395,7 @@
 <h2 id="page_facing_up-licence">📄 Licence<a class="anchor" aria-label="anchor" href="#page_facing_up-licence"></a>
 </h2>
 <p>Released under the <a href="./LICENSE">MIT License</a>. Vendored OMAPI code in <code>src/omapi</code> is BSD 2-clause, Copyright © Newcastle University — see <a href="src/omapi/LICENSE.TXT"><code>src/omapi/LICENSE.TXT</code></a>.</p>
-<p>Copyright © Lucas França &amp; Mario Leocadio-Miguel, 2026</p>
+<p>Copyright © Lucas França, Mario Leocadio-Miguel &amp; Daniel Jackson, 2026</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -408,6 +430,8 @@
 <a href="https://orcid.org/0000-0003-0853-1319" class="external-link">Lucas França</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0003-0853-1319" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>
 <a href="https://orcid.org/0000-0002-7248-3529" class="external-link">Mario Leocadio-Miguel</a> <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-7248-3529" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>
+<a href="https://orcid.org/0000-0002-6349-5026" class="external-link">Daniel Jackson</a> <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-6349-5026" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
@@ -418,7 +442,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p><strong>axR</strong> — Circadia Lab, Northumbria University. Lucas França &amp; Mario Leocadio-Miguel.</p>
+  <p><strong>axR</strong> — Circadia Lab, Northumbria University. Lucas França, Mario Leocadio-Miguel &amp; Daniel Jackson.</p>
 </div>
 
 <div class="pkgdown-footer-right">

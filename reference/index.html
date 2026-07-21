@@ -262,6 +262,22 @@
         </dt>
         <dd>Erase an Axivity device's data storage and commit settings</dd>
       </dl></div><div class="section level2">
+      <h2 id="deployment-staging">Deployment staging<a class="anchor" aria-label="anchor" href="#deployment-staging"></a></h2>
+
+      <div class="section-desc"><p>One-call staging of settings for a participant deployment.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="axivity_stage_device.html">axivity_stage_device()</a></code>
+
+        </dt>
+        <dd>Stage an Axivity device for deployment</dd>
+      </dl></div><div class="section level2">
       <h2 id="data-download">Data download<a class="anchor" aria-label="anchor" href="#data-download"></a></h2>
 
       <div class="section-desc"><p>Retrieve recorded data from a connected device, or a fallback for when device discovery isn’t finding it.</p></div>
@@ -306,9 +322,9 @@
         </dt>
         <dd>Copy recorded data directly off a mounted Axivity volume</dd>
       </dl></div><div class="section level2">
-      <h2 id="reading-cwa-files">Reading .cwa files<a class="anchor" aria-label="anchor" href="#reading-cwa-files"></a></h2>
+      <h2 id="reading-actigraphy-files">Reading actigraphy files<a class="anchor" aria-label="anchor" href="#reading-actigraphy-files"></a></h2>
 
-      <div class="section-desc"><p>Parse recorded .cwa/AX6 binary files directly, no device required.</p></div>
+      <div class="section-desc"><p>Parse recorded actigraphy files directly, no device required.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -321,6 +337,13 @@
 
         </dt>
         <dd>Read a .cwa/AX6 binary file into a tibble</dd>
+
+        <dt>
+
+          <code><a href="read_acttrust.html">read_acttrust()</a></code>
+
+        </dt>
+        <dd>Read a Condor Instruments ActTrust actigraphy file</dd>
       </dl></div><div class="section level2">
       <h2 id="diagnostics">Diagnostics<a class="anchor" aria-label="anchor" href="#diagnostics"></a></h2>
 
@@ -352,14 +375,14 @@
           <code><a href="axR-package.html">axR</a></code> <code><a href="axR-package.html">axR-package</a></code>
 
         </dt>
-        <dd>axR: Device Communication and .cwa File Reading for Axivity Devices</dd>
+        <dd>axR: Interfacing and Retrieving Data from Accelerometer Devices</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p><strong>axR</strong> — Circadia Lab, Northumbria University. Lucas França &amp; Mario Leocadio-Miguel.</p>
+  <p><strong>axR</strong> — Circadia Lab, Northumbria University. Lucas França, Mario Leocadio-Miguel &amp; Daniel Jackson.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -1,10 +1,10 @@
 # ⛏️ axR
 
-**Device discovery, status, settings, and data download for Axivity
-AX3/AX6 accelerometer devices.**
+**Device discovery, status, settings, and data download for
+accelerometer devices.**
 
 [![r-universe](https://circadia-bio.r-universe.dev/badges/axR)](https://circadia-bio.r-universe.dev/axR)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21393893-blue)](https://doi.org/10.5281/zenodo.21393893)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21393892-blue)](https://doi.org/10.5281/zenodo.21393892)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://axr.circadia-lab.uk/LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
@@ -20,7 +20,9 @@ CHECK](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/ba
 
 `axR` talks to Axivity AX3/AX6 accelerometers over USB: discovering
 connected devices, querying and setting status/configuration, and
-downloading recorded `.cwa` files.
+downloading recorded `.cwa` files. It also parses those `.cwa` files
+directly, and – as of a recent addition – Condor Instruments ActTrust
+`.txt` actigraphy exports, into the same tidy epoch shape.
 
 Rather than reimplementing the Axivity serial protocol directly, axR
 wraps the Open Movement Project’s
@@ -36,25 +38,28 @@ rather than a hand-rolled equivalent.
 moves bytes, leaving higher-level actigraphy analysis to downstream
 packages such as [mrpheus](https://github.com/circadia-bio/mrpheus) or
 [zeitR](https://github.com/circadia-bio/zeitR).
-[`axivity_read_cwa()`](#id_-features) is a deliberate exception: OMAPI
-already ships a complete `.cwa` reader, so axR wraps that directly
-rather than building a second, differently-sourced parser.
+[`axivity_read_cwa()`](#id_-features) and
+[`read_acttrust()`](#id_-features) are deliberate exceptions: OMAPI
+already ships a complete `.cwa` reader, and ActTrust’s `.txt` export
+format is a plain, well-specified text format – so axR wraps/parses both
+directly rather than building a second, differently-sourced parser for
+either.
+[`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)
+deliberately stops at device-format parsing, though: it returns the
+file’s own epoch columns with no pipeline-specific columns or classes
+added, leaving that reshaping to downstream packages (e.g. zeitR), the
+same way
+[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+does.
 
 ------------------------------------------------------------------------
 
 > \[!WARNING\] **axR has not been fully verified against real
-> hardware.** Live-device testing (macOS, real AX3) found and fixed four
-> separate crashes in the vendored library’s device-removal handling –
-> see `NEWS.md` for detail. `timestamp`/`x`/`y`/`z`/`device_id` from
+> hardware.** Live-device testing was performed on macOS and a real AX3.
+> `timestamp`/`x`/`y`/`z`/`device_id` from
 > [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
 > have been verified correct against a real recording; `temperature_c`
-> has not, and is likely wrong on at least some hardware revisions.
-> [`axivity_discover()`](https://axr.circadia-lab.uk/reference/axivity_discover.md)
-> is not currently finding a real AX3 on at least one tested machine,
-> despite the device enumerating correctly at the OS level –
-> [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)/[`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
-> work independently of this. Windows and Linux device discovery compile
-> clean but are untested against real hardware on either platform. Not
+> has not, and is likely wrong on at least some hardware revisions. Not
 > tested against an AX6.
 
 ------------------------------------------------------------------------
@@ -72,6 +77,15 @@ rather than building a second, differently-sourced parser.
   scratch buffer, accelerometer rate/range, and
   [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md)
   (erase + commit, with `none`/`delete`/`quickformat`/`wipe` levels)
+- 🧰
+  **[`axivity_stage_device()`](https://axr.circadia-lab.uk/reference/axivity_stage_device.md)**
+  — one-call deployment staging: sets accelerometer config, deployment
+  window (as `start`/`stop` or `start`/`duration`), session ID, and
+  metadata, then commits with
+  [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md).
+  For finer control, the underlying `axivity_set_*()` functions and
+  [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md)
+  remain available individually
 - 📥 **Download** —
   [`axivity_download()`](https://axr.circadia-lab.uk/reference/axivity_download.md),
   backed by OMAPI’s own background download thread (progress polling and
@@ -87,6 +101,12 @@ rather than building a second, differently-sourced parser.
   — parse a `.cwa`/AX6 file directly (via OMAPI’s own binary reader)
   into a tibble ready for downstream actigraphy analysis — no live
   device or prior discovery required
+- 📋
+  **[`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)**
+  — parse a Condor Instruments ActTrust `.txt` export into the same tidy
+  epoch shape, as a device-agnostic actigraphy import layer alongside
+  [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
+  – no live device required
 - 🐞
   **[`axivity_enable_debug_log()`](https://axr.circadia-lab.uk/reference/axivity_enable_debug_log.md)**
   — re-enable OMAPI’s internal diagnostic trace, for debugging
@@ -110,9 +130,12 @@ unloaded. Every device-facing function takes a `device_id` from
     │   ├── status.R          # battery, self-test, memory health, accelerometer,
     │   │                       # RTC, LED, lock, ECC, send_command
     │   ├── settings.R        # delays, session ID, metadata, accel config, reset
+    │   ├── stage.R            # axivity_stage_device() -- one-call deployment staging
     │   ├── download.R        # data info, download, download_status/wait/cancel,
     │   │                       # axivity_copy_data()
-    │   └── read_cwa.R        # axivity_read_cwa()
+    │   ├── read_cwa.R        # axivity_read_cwa()
+    │   ├── read_acttrust.R   # read_acttrust()
+    │   └── utils.R           # internal message helpers (axr_abort/warn/inform), %||%
     ├── src/
     │   ├── axR-omapi.cpp     # thin Rcpp wrapper around OMAPI
     │   ├── omapi/             # vendored OMAPI C library (BSD 2-clause), with
@@ -173,7 +196,9 @@ separately on the machine running R, regardless of install method.
 vignette("axR")
 ```
 
-Walks through discovery, status/settings, downloading, the
+Walks through discovery, status/settings, deployment staging with
+[`axivity_stage_device()`](https://axr.circadia-lab.uk/reference/axivity_stage_device.md),
+downloading, the
 [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)
 fallback, and reading `.cwa` files with
 [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md).
@@ -183,7 +208,9 @@ fallback, and reading `.cwa` files with
 | Package | Type | Purpose |
 |----|----|----|
 | Rcpp | Imports | Bridges R to the vendored OMAPI C library |
-| tibble | Suggests | [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)’s return type (falls back to a plain data frame if absent) |
+| cli | Imports | [`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)’s error/warning messages |
+| lubridate | Imports | [`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)’s flexible date-time parsing |
+| tibble | Suggests | [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)/[`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)’s return type (falls back to a plain data frame if absent) |
 | testthat | Suggests | Test suite |
 | covr | Suggests | Coverage reporting |
 | knitr, rmarkdown, pkgdown | Suggests | Vignette and documentation site |
@@ -194,6 +221,7 @@ fallback, and reading `.cwa` files with
 |----|----|----|
 | Author, maintainer | Lucas França | Circadia Lab, Northumbria University |
 | Author | Mario Leocadio-Miguel | Circadia Lab, Northumbria University |
+| Author | Daniel Jackson | Northumbria University |
 
 ## 📄 Citation
 
@@ -201,11 +229,11 @@ If you use axR in your research, please cite it:
 
 ``` bibtex
 @software{franca_axr_2026,
-  author  = {França, Lucas and Leocadio-Miguel, Mario},
-  title   = {{axR}: Serial Communication and Data Retrieval for Axivity Devices},
+  author  = {França, Lucas and Leocadio-Miguel, Mario and Jackson, Daniel},
+  title   = {{axR}: Interfacing and Retrieving Data from Accelerometer Devices},
   year    = {2026},
   version = {0.1.1},
-  doi     = {10.5281/zenodo.21393893},
+  doi     = {10.5281/zenodo.21393892},
   url     = {https://github.com/circadia-bio/axR}
 }
 ```
@@ -228,4 +256,4 @@ Vendored OMAPI code in `src/omapi` is BSD 2-clause, Copyright ©
 Newcastle University — see
 [`src/omapi/LICENSE.TXT`](https://axr.circadia-lab.uk/src/omapi/LICENSE.TXT).
 
-Copyright © Lucas França & Mario Leocadio-Miguel, 2026
+Copyright © Lucas França, Mario Leocadio-Miguel & Daniel Jackson, 2026

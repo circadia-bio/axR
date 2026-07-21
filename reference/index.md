@@ -53,6 +53,13 @@ Delayed activation, session ID, metadata, accelerometer config, erase.
 - [`axivity_reset()`](https://axr.circadia-lab.uk/reference/axivity_reset.md)
   : Erase an Axivity device's data storage and commit settings
 
+## Deployment staging
+
+One-call staging of settings for a participant deployment.
+
+- [`axivity_stage_device()`](https://axr.circadia-lab.uk/reference/axivity_stage_device.md)
+  : Stage an Axivity device for deployment
+
 ## Data download
 
 Retrieve recorded data from a connected device, or a fallback for when
@@ -70,12 +77,14 @@ device discovery isn’t finding it.
 - [`axivity_copy_data()`](https://axr.circadia-lab.uk/reference/axivity_copy_data.md)
   : Copy recorded data directly off a mounted Axivity volume
 
-## Reading .cwa files
+## Reading actigraphy files
 
-Parse recorded .cwa/AX6 binary files directly, no device required.
+Parse recorded actigraphy files directly, no device required.
 
 - [`axivity_read_cwa()`](https://axr.circadia-lab.uk/reference/axivity_read_cwa.md)
   : Read a .cwa/AX6 binary file into a tibble
+- [`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)
+  : Read a Condor Instruments ActTrust actigraphy file
 
 ## Diagnostics
 
@@ -90,4 +99,4 @@ Package-level documentation.
 
 - [`axR`](https://axr.circadia-lab.uk/reference/axR-package.md)
   [`axR-package`](https://axr.circadia-lab.uk/reference/axR-package.md)
-  : axR: Device Communication and .cwa File Reading for Axivity Devices
+  : axR: Interfacing and Retrieving Data from Accelerometer Devices
