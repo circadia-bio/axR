@@ -3,7 +3,7 @@
 **Device discovery, status, settings, and data download for accelerometer devices.**
 
 [![r-universe](https://circadia-bio.r-universe.dev/badges/axR)](https://circadia-bio.r-universe.dev/axR)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21393893-blue)](https://doi.org/10.5281/zenodo.21393893)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.21393892-blue)](https://doi.org/10.5281/zenodo.21393892)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![R CMD CHECK](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/axR/actions/workflows/R-CMD-check.yaml)
@@ -198,7 +198,7 @@ If you use axR in your research, please cite it:
   title   = {{axR}: Serial Communication and Data Retrieval for Axivity Devices},
   year    = {2026},
   version = {0.1.1},
-  doi     = {10.5281/zenodo.21393893},
+  doi     = {10.5281/zenodo.21393892},
   url     = {https://github.com/circadia-bio/axR}
 }
 ```

@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 type: software
 title: "axR: Serial Communication and Data Retrieval for Axivity Devices"
 version: 0.1.1
-doi: 10.5281/zenodo.21393893
+doi: 10.5281/zenodo.21393892
 url: "https://github.com/circadia-bio/axR"
 repository-code: "https://github.com/circadia-bio/axR"
 license: "MIT"
