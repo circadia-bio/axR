@@ -1,5 +1,5 @@
 Package: axR
-Title: Serial Communication and Data Retrieval for Axivity Devices
+Title: Interfacing and Retrieving Data from Accelerometer Devices
 Version: 0.1.2
 Authors@R: c(
     person("Lucas", "França",

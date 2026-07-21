@@ -195,7 +195,7 @@ If you use axR in your research, please cite it:
 ```bibtex
 @software{franca_axr_2026,
   author  = {França, Lucas and Leocadio-Miguel, Mario and Jackson, Daniel},
-  title   = {{axR}: Serial Communication and Data Retrieval for Axivity Devices},
+  title   = {{axR}: Interfacing and Retrieving Data from Accelerometer Devices},
   year    = {2026},
   version = {0.1.1},
   doi     = {10.5281/zenodo.21393892},

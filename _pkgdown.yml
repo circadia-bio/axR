@@ -146,19 +146,21 @@ logo: man/figures/logo.svg
 opengraph:
   image:
     src: https://axr.circadia-lab.uk/logo.png
-    alt: "axR - Device communication and .cwa file reading for Axivity devices"
+    alt: "axR - Interfacing and retrieving data from accelerometer devices"
   twitter:
     creator: "@circadia_lab"
     card: summary
 
 home:
-  title: "axR — Device communication and .cwa file reading for Axivity devices"
+  title: "axR — Interfacing and retrieving data from accelerometer devices"
   description: >
     Talks to Axivity AX3/AX6 accelerometer devices: discovery, status,
     settings, data download, and reading recorded .cwa/AX6 binary files.
-    Wraps the Open Movement Project's OMAPI C library rather than
-    reimplementing the serial protocol or binary file format directly.
-    Part of the Circadia Lab R ecosystem at Northumbria University.
+    Also reads Condor Instruments ActTrust .txt actigraphy exports into
+    the same tidy epoch shape. Wraps the Open Movement Project's OMAPI
+    C library rather than reimplementing the serial protocol or binary
+    file format directly. Part of the Circadia Lab R ecosystem at
+    Northumbria University.
   links:
   - text: Circadia Lab
     href: https://circadia-lab.uk
