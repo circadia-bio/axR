@@ -232,7 +232,7 @@ If you use axR in your research, please cite it:
   author  = {França, Lucas and Leocadio-Miguel, Mario and Jackson, Daniel},
   title   = {{axR}: Interfacing and Retrieving Data from Accelerometer Devices},
   year    = {2026},
-  version = {0.1.1},
+  version = {0.1.3},
   doi     = {10.5281/zenodo.21393892},
   url     = {https://github.com/circadia-bio/axR}
 }

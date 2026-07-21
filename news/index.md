@@ -1,6 +1,6 @@
 # Changelog
 
-## axR (development version)
+## axR 0.1.3 (2026-07)
 
 ### ✨ New features
 
@@ -59,6 +59,23 @@
   header, and missing-required-column error paths. No real participant
   data needed – synthetic fixtures built inline, per the
   no-permanently-skipped-tests policy.
+
+### ⚠️ Known limitations
+
+- [`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md)’s
+  parsing logic (header parsing, column mapping, date coercion) is a
+  direct, line-for-line port of zeitR’s
+  [`read_acttrust()`](https://axr.circadia-lab.uk/reference/read_acttrust.md),
+  which has already been exercised against real Condor ActTrust
+  recordings as part of zeitR’s own Vallim parity test suite – that
+  track record carries forward with the port. What’s new here and only
+  covered by synthetic fixtures so far is the port itself: the dropped
+  `state`/`offwrist`/`sleep` columns and `zeitr_acttrust` class (this
+  function is a device-format parser only, by design – see above), and
+  the switch from zeitR’s `cli`-based `zeitr_abort()` to axR’s own
+  `axr_abort()`. The vignette’s “Reading ActTrust files” section stays
+  `eval = FALSE` pending verification of the port specifically against a
+  real export.
 
 ### 📚 Documentation
 

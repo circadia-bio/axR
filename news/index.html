@@ -99,7 +99,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">axR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -131,27 +131,32 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="axr-development-version">axR (development version)<a class="anchor" aria-label="anchor" href="#axr-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.1.3" id="axr-013-2026-07">axR 0.1.3 (2026-07)<a class="anchor" aria-label="anchor" href="#axr-013-2026-07"></a></h2>
 <div class="section level3">
-<h3 id="sparkles-new-features-development-version">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-development-version"></a></h3>
+<h3 id="sparkles-new-features-0-1-3">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-0-1-3"></a></h3>
 <ul><li>
 <code><a href="../reference/axivity_stage_device.html">axivity_stage_device()</a></code> – a single convenience function to configure a device end-to-end for a participant deployment (accelerometer rate/range, deployment window, session ID, metadata) and commit it with <code><a href="../reference/axivity_reset.html">axivity_reset()</a></code>, rather than calling the four <code>axivity_set_*()</code> functions plus <code><a href="../reference/axivity_reset.html">axivity_reset()</a></code> separately. The deployment window can be given as explicit <code>start</code>/<code>stop</code> <code>POSIXct</code> values or as <code>start</code> + <code>duration</code>. Deliberately does not allow <code>reset_level = "none"</code>, since that would leave the staged settings only partially committed; users who need that level of control can still call the individual <code>axivity_set_*()</code> functions and <code><a href="../reference/axivity_reset.html">axivity_reset()</a></code> themselves.</li>
 <li>
 <code><a href="../reference/read_acttrust.html">read_acttrust()</a></code> – parses a Condor Instruments ActTrust <code>.txt</code> actigraphy export directly, ported from zeitR as the first step toward making axR a general, device-agnostic actigraphy import layer (mirroring <code><a href="../reference/axivity_read_cwa.html">axivity_read_cwa()</a></code> for the Axivity side). Deliberately a device-format parser only: returns the file’s own epoch columns (<code>datetime</code>, <code>activity</code>, <code>int_temp</code>, <code>ext_temp</code>, <code>ZCMn</code>, <code>light</code>) with a <code>metadata</code> attribute, and adds no pipeline-specific columns or classes – downstream packages (e.g. zeitR) are expected to wrap this themselves, the same way <code>zeitR::read_axivity()</code> already wraps <code><a href="../reference/axivity_read_cwa.html">axivity_read_cwa()</a></code>. zeitR’s own <code><a href="../reference/read_acttrust.html">read_acttrust()</a></code> is unchanged for now; it will become a thin wrapper around this one in a follow-up.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="package-dependencies-development-version">📦 Dependencies<a class="anchor" aria-label="anchor" href="#package-dependencies-development-version"></a></h3>
+<h3 id="package-dependencies-0-1-3">📦 Dependencies<a class="anchor" aria-label="anchor" href="#package-dependencies-0-1-3"></a></h3>
 <ul><li>Added <code>cli</code> and <code>lubridate</code> to Imports, for <code><a href="../reference/read_acttrust.html">read_acttrust()</a></code>’s error/warning messages and flexible date-time parsing respectively. New internal <code>axr_abort()</code>/<code>axr_warn()</code>/<code>axr_inform()</code> message helpers and a <code>%||%</code> operator (<code>R/utils.R</code>) mirror zeitR’s own <code>R/utils.R</code>, so message style stays consistent across the ecosystem as more parsers move into axR.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="test_tube-tests-development-version">🧪 Tests<a class="anchor" aria-label="anchor" href="#test_tube-tests-development-version"></a></h3>
+<h3 id="test_tube-tests-0-1-3">🧪 Tests<a class="anchor" aria-label="anchor" href="#test_tube-tests-0-1-3"></a></h3>
 <ul><li>
 <code><a href="../reference/axivity_stage_device.html">axivity_stage_device()</a></code> rejecting <code>reset_level = "none"</code> before touching a device – the one branch of the function testable without hardware, matching the rest of the suite.</li>
 <li>
 <code><a href="../reference/read_acttrust.html">read_acttrust()</a></code>: header metadata and epoch-data parsing against a synthetic export fixture; optional columns (<code>ext_temp</code>/<code>ZCMn</code>/<code>light</code>) defaulting to <code>NA</code> when absent from the export; missing-file, missing <code>DATE/TIME</code> header, and missing-required-column error paths. No real participant data needed – synthetic fixtures built inline, per the no-permanently-skipped-tests policy.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="books-documentation-development-version">📚 Documentation<a class="anchor" aria-label="anchor" href="#books-documentation-development-version"></a></h3>
+<h3 id="warning-known-limitations-0-1-3">⚠️ Known limitations<a class="anchor" aria-label="anchor" href="#warning-known-limitations-0-1-3"></a></h3>
+<ul><li>
+<code><a href="../reference/read_acttrust.html">read_acttrust()</a></code>’s parsing logic (header parsing, column mapping, date coercion) is a direct, line-for-line port of zeitR’s <code><a href="../reference/read_acttrust.html">read_acttrust()</a></code>, which has already been exercised against real Condor ActTrust recordings as part of zeitR’s own Vallim parity test suite – that track record carries forward with the port. What’s new here and only covered by synthetic fixtures so far is the port itself: the dropped <code>state</code>/<code>offwrist</code>/<code>sleep</code> columns and <code>zeitr_acttrust</code> class (this function is a device-format parser only, by design – see above), and the switch from zeitR’s <code>cli</code>-based <code>zeitr_abort()</code> to axR’s own <code>axr_abort()</code>. The vignette’s “Reading ActTrust files” section stays <code>eval = FALSE</code> pending verification of the port specifically against a real export.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="books-documentation-0-1-3">📚 Documentation<a class="anchor" aria-label="anchor" href="#books-documentation-0-1-3"></a></h3>
 <ul><li>README and <code><a href="../articles/axR.html">vignette("axR")</a></code> updated for <code><a href="../reference/read_acttrust.html">read_acttrust()</a></code>: features list, dependencies table, project structure, and a new “Reading ActTrust files” vignette section alongside the existing <code>.cwa</code> one. The “dumb pipe” scope note now covers both parsers as deliberate exceptions. The vignette section defaults to <code>eval = FALSE</code> like the rest of the doc, pending verification against a real ActTrust export.</li>
 </ul></div>
 </div>
