@@ -221,10 +221,11 @@ reference:
   - axivity_download_cancel
   - axivity_copy_data
 
-- title: "Reading .cwa files"
-  desc: "Parse recorded .cwa/AX6 binary files directly, no device required."
+- title: "Reading actigraphy files"
+  desc: "Parse recorded actigraphy files directly, no device required."
   contents:
   - axivity_read_cwa
+  - read_acttrust
 
 - title: "Diagnostics"
   desc: "Tools for debugging device discovery/communication issues."
@@ -252,6 +253,8 @@ authors:
     href: https://orcid.org/0000-0003-0853-1319
   Mario Leocadio-Miguel:
     href: https://orcid.org/0000-0002-7248-3529
+  Daniel Jackson:
+    href: https://orcid.org/0000-0002-6349-5026
 
 footer:
   structure:
@@ -261,4 +264,4 @@ footer:
     package: >
       **axR** — Circadia Lab, Northumbria University.
     developed_by: >
-      Lucas França & Mario Leocadio-Miguel.
+      Lucas França, Mario Leocadio-Miguel & Daniel Jackson.
