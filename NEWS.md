@@ -12,12 +12,47 @@
   that would leave the staged settings only partially committed; users
   who need that level of control can still call the individual
   `axivity_set_*()` functions and `axivity_reset()` themselves.
+* `read_acttrust()` -- parses a Condor Instruments ActTrust `.txt`
+  actigraphy export directly, ported from zeitR as the first step
+  toward making axR a general, device-agnostic actigraphy import layer
+  (mirroring `axivity_read_cwa()` for the Axivity side). Deliberately a
+  device-format parser only: returns the file's own epoch columns
+  (`datetime`, `activity`, `int_temp`, `ext_temp`, `ZCMn`, `light`) with
+  a `metadata` attribute, and adds no pipeline-specific columns or
+  classes -- downstream packages (e.g. zeitR) are expected to wrap this
+  themselves, the same way `zeitR::read_axivity()` already wraps
+  `axivity_read_cwa()`. zeitR's own `read_acttrust()` is unchanged for
+  now; it will become a thin wrapper around this one in a follow-up.
+
+### 📦 Dependencies
+
+* Added `cli` and `lubridate` to Imports, for `read_acttrust()`'s
+  error/warning messages and flexible date-time parsing respectively.
+  New internal `axr_abort()`/`axr_warn()`/`axr_inform()` message
+  helpers and a `%||%` operator (`R/utils.R`) mirror zeitR's own
+  `R/utils.R`, so message style stays consistent across the ecosystem
+  as more parsers move into axR.
 
 ### 🧪 Tests
 
 * `axivity_stage_device()` rejecting `reset_level = "none"` before
   touching a device -- the one branch of the function testable without
   hardware, matching the rest of the suite.
+* `read_acttrust()`: header metadata and epoch-data parsing against a
+  synthetic export fixture; optional columns (`ext_temp`/`ZCMn`/`light`)
+  defaulting to `NA` when absent from the export; missing-file, missing
+  `DATE/TIME` header, and missing-required-column error paths. No real
+  participant data needed -- synthetic fixtures built inline, per the
+  no-permanently-skipped-tests policy.
+
+### 📚 Documentation
+
+* README and `vignette("axR")` updated for `read_acttrust()`: features
+  list, dependencies table, project structure, and a new "Reading
+  ActTrust files" vignette section alongside the existing `.cwa` one.
+  The "dumb pipe" scope note now covers both parsers as deliberate
+  exceptions. The vignette section defaults to `eval = FALSE` like the
+  rest of the doc, pending verification against a real ActTrust export.
 
 ## axR 0.1.2  (2026-07)
 

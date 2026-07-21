@@ -28,8 +28,10 @@ library(axR)
 ## What axR does
 
 axR talks to Axivity AX3/AX6 accelerometer devices: discovery, status,
-settings, data download, and -- as of a recent addition -- reading
-recorded `.cwa`/AX6 binary files directly.
+settings, data download, and reading recorded `.cwa`/AX6 binary files
+directly. As of a recent addition, it also reads Condor Instruments
+ActTrust `.txt` actigraphy exports into the same tidy epoch shape --
+a device-agnostic actigraphy import layer alongside the Axivity side.
 
 It does this by wrapping the Open Movement Project's OMAPI C library
 (vendored in `src/omapi`), rather than reimplementing the serial protocol
@@ -229,16 +231,50 @@ data <- axivity_read_cwa("~/axr_data/CWA-DATA.CWA")
 (zeitR's actual entry point for this may differ -- check zeitR's own
 documentation for the current expected input shape.)
 
+## Reading ActTrust files
+
+`read_acttrust()` is the ActTrust counterpart to `axivity_read_cwa()`:
+no live device required, works directly on a Condor Instruments
+ActTrust `.txt` export already on disk.
+
+```{r}
+rec <- read_acttrust("~/axr_test_data/P001.txt")
+rec
+```
+
+One row per epoch: `datetime` (`POSIXct`), `activity` (PIM), `int_temp`
+(on-body temperature, degC), `ext_temp` (ambient temperature, degC --
+`NA` if the export doesn't include it), `ZCMn` (normalised
+zero-crossing count, `NA` if absent), and `light` (lux, `NA` if
+absent).
+
+```{r}
+attr(rec, "metadata")
+```
+
+`metadata` carries `subject`, `device_id`, `device_model`,
+`firmware_version`, `interval_s`, and `source_file` -- parsed from the
+file's own key-value header block, the same attribute-based pattern
+`axivity_read_cwa()` uses for `device_id`/`session_id`/`metadata`.
+
+Like `axivity_read_cwa()`, this is a device-format parser only: it
+returns the file's own epoch columns and doesn't add any
+pipeline-specific columns or classes. Downstream packages (e.g. zeitR)
+are expected to wrap this in their own function to reshape the output
+into their pipeline's shape -- the same way `zeitR::read_axivity()`
+currently wraps `axivity_read_cwa()`.
+
 ## A note on scope
 
 axR was originally scoped as a "dumb pipe": talk to the device, move
 bytes, leave all file parsing to downstream packages. `axivity_read_cwa()`
-is a deliberate exception to that -- OMAPI already ships a complete
-`.cwa` reader, and wrapping it directly avoids building a second,
-differently-sourced parser for the same format. axR still doesn't do any
-higher-level actigraphy analysis (sleep detection, non-wear detection,
-etc.) on the data it reads -- that's zeitR's job, downstream of the
-tibble this returns.
+and `read_acttrust()` are deliberate exceptions to that -- OMAPI already
+ships a complete `.cwa` reader, and ActTrust's `.txt` export is a plain,
+well-specified text format, so wrapping/parsing both directly avoids
+building a second, differently-sourced parser for either format. axR
+still doesn't do any higher-level actigraphy analysis (sleep detection,
+non-wear detection, etc.) on the data it reads -- that's zeitR's job,
+downstream of the tibbles these functions return.
 
 ## Known limitations
 

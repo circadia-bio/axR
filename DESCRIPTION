@@ -9,24 +9,31 @@ Authors@R: c(
     person("Mario", "Leocadio-Miguel",
            email = "mario.miguel@northumbria.ac.uk",
            role = "aut",
-           comment = c(ORCID = "0000-0002-7248-3529")))
+           comment = c(ORCID = "0000-0002-7248-3529")),
+    person("Daniel", "Jackson",
+           role = "aut",
+           comment = c(ORCID = "0000-0002-6349-5026")))
 Description: Serial communication and data retrieval for Axivity AX3/AX6
     accelerometer devices: device discovery, status, settings, data
     download, and reading recorded '.cwa'/AX6 binary files. Wraps the
     Open Movement Project's 'OMAPI' C library (vendored in src/omapi,
     BSD 2-clause, Newcastle University; see src/omapi/LICENSE.TXT),
     rather than reimplementing the serial protocol or binary file format
-    directly. On Linux, device discovery requires 'libudev-dev'
-    (Debian/Ubuntu) or 'systemd-devel' (Fedora/RHEL) to be installed
-    separately -- see SystemRequirements. macOS and Windows use OS
-    frameworks/APIs directly, with no separate install step. Part of the
-    Circadia Lab R ecosystem.
+    directly. Also reads Condor Instruments ActTrust '.txt' actigraphy
+    exports into the same tidy epoch shape, as a device-agnostic
+    actigraphy import layer. On Linux, device discovery requires
+    'libudev-dev' (Debian/Ubuntu) or 'systemd-devel' (Fedora/RHEL) to be
+    installed separately -- see SystemRequirements. macOS and Windows use
+    OS frameworks/APIs directly, with no separate install step. Part of
+    the Circadia Lab R ecosystem.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Depends:
     R (>= 4.1.0)
 Imports:
+    cli,
+    lubridate,
     Rcpp (>= 1.0.0)
 LinkingTo:
     Rcpp
