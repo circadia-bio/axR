@@ -14,7 +14,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/circadia-bio/axR/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/circadia-bio/axR/blob/v0.1.3/DESCRIPTION)
 
 França L, Leocadio-Miguel M, Jackson D (2026). *axR: Interfacing and
 Retrieving Data from Accelerometer Devices*. R package version 0.1.3,
