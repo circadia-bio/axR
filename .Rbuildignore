@@ -9,6 +9,7 @@
 ^docs$
 ^doc$
 ^Meta$
+^CITATION\.cff$
 ^vignettes/.*\.orig$
 \.o$
 \.so$
