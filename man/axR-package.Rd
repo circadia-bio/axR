@@ -4,24 +4,28 @@
 \name{axR-package}
 \alias{axR}
 \alias{axR-package}
-\title{axR: Device Communication and .cwa File Reading for Axivity Devices}
+\title{axR: Interfacing and Retrieving Data from Accelerometer Devices}
 \description{
 Talks to Axivity AX3/AX6 accelerometer devices: discovery, status
 (battery, self-test, memory health, accelerometer, RTC, LED, lock,
 ECC), settings (delays, session ID, metadata, accelerometer config,
 erase), data download, and reading recorded \code{.cwa}/AX6 binary files
-(\code{\link[=axivity_read_cwa]{axivity_read_cwa()}}).
+(\code{\link[=axivity_read_cwa]{axivity_read_cwa()}}). Also reads Condor Instruments ActTrust \code{.txt}
+actigraphy exports (\code{\link[=read_acttrust]{read_acttrust()}}) into the same tidy epoch shape,
+as a device-agnostic actigraphy import layer.
 }
 \details{
 axR was originally scoped as a "dumb pipe" -- talk to the device, move
 bytes, leave file parsing to downstream packages. \code{\link[=axivity_read_cwa]{axivity_read_cwa()}}
-is a deliberate exception: OMAPI already ships a complete binary file
-reader (\code{omapi-reader.c}), and wrapping it directly is simpler and
-more consistent than reimplementing the same format a second time in
-\pkg{zeitR} from a different reference pipeline. axR does not do any
-higher-level actigraphy analysis on the parsed data (sleep detection,
-non-wear detection, etc.) -- that's still \pkg{zeitR}'s job, downstream
-of the tibble this returns.
+and \code{\link[=read_acttrust]{read_acttrust()}} are deliberate exceptions: OMAPI already ships a
+complete binary file reader (\code{omapi-reader.c}), and ActTrust's \code{.txt}
+export is a plain, well-specified text format -- wrapping/parsing both
+directly is simpler and more consistent than reimplementing either
+format a second time in \pkg{zeitR} from a different reference
+pipeline. axR does not do any higher-level actigraphy analysis on the
+parsed data (sleep detection, non-wear detection, etc.) -- that's
+still \pkg{zeitR}'s job, downstream of the tibbles these functions
+return.
 }
 \section{Implementation}{
 
@@ -38,9 +42,9 @@ The OMAPI session is started when axR is loaded (\code{OmStartup()} in
 \code{.onLoad()}) and shut down when it's unloaded (\code{OmShutdown()} in
 \code{.onUnload()}) -- there's no separate \code{axivity_open()}/\code{close()} step.
 Every device-facing function takes a \code{device_id}, obtained from
-\code{\link[=axivity_discover]{axivity_discover()}}. \code{\link[=axivity_read_cwa]{axivity_read_cwa()}} and \code{\link[=axivity_copy_data]{axivity_copy_data()}}
-are the exceptions -- they work on a file already on disk and don't
-need a live device connection at all.
+\code{\link[=axivity_discover]{axivity_discover()}}. \code{\link[=axivity_read_cwa]{axivity_read_cwa()}}, \code{\link[=read_acttrust]{read_acttrust()}}, and
+\code{\link[=axivity_copy_data]{axivity_copy_data()}} are the exceptions -- they work on a file
+already on disk and don't need a live device connection at all.
 }
 
 \seealso{
