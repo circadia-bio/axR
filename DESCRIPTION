@@ -1,6 +1,6 @@
 Package: axR
 Title: Interfacing and Retrieving Data from Accelerometer Devices
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
