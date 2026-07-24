@@ -1,3 +1,16 @@
+## axR (development version)
+
+### 🐛 Bug fixes
+
+* Corrected hex sticker logo proportions to match the ecosystem-standard
+  aspect ratio.
+* Fixed the pixel-art pickaxe illustration appearing stretched after the
+  proportion fix; it now stays square as originally drawn.
+* Fixed the package-name wordmark occasionally rendering misaligned
+  depending on the viewer/renderer; it's now baked as vector artwork
+  rather than live text, so it displays identically everywhere.
+* Regenerated favicons from the corrected logo.
+
 ## axR 0.1.3  (2026-07)
 
 ### ✨ New features
