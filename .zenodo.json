@@ -1,0 +1,38 @@
+{
+  "title": "axR: Interfacing and Retrieving Data from Accelerometer Devices",
+  "description": "Serial communication and data retrieval for Axivity AX3/AX6 accelerometer devices: device discovery, status, settings, data download, and reading recorded .cwa/AX6 binary files. Wraps the Open Movement Project's OMAPI C library rather than reimplementing the serial protocol or binary file format directly. Also reads Condor Instruments ActTrust .txt actigraphy exports into the same tidy epoch shape, as a device-agnostic actigraphy import layer. Part of the Circadia Lab R ecosystem.",
+  "creators": [
+    {
+      "name": "França, Lucas",
+      "affiliation": "Northumbria University",
+      "orcid": "0000-0003-0853-1319"
+    },
+    {
+      "name": "Leocadio-Miguel, Mario",
+      "affiliation": "Northumbria University",
+      "orcid": "0000-0002-7248-3529"
+    },
+    {
+      "name": "Jackson, Daniel",
+      "orcid": "0000-0002-6349-5026"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "accelerometer",
+    "actigraphy",
+    "Axivity",
+    "wearables",
+    "R package",
+    "Circadia Lab"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/circadia-bio/axR",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
+}
